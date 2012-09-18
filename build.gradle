@@ -1,0 +1,40 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+compileJava.sourceCompatibility = 1.6
+
+allprojects {
+  apply plugin: 'scala'
+
+  repositories {
+    mavenCentral()
+    maven { url 'http://repo.typesafe.com/typesafe/releases' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+  }
+
+  dependencies {
+    scalaTools "org.scala-lang:scala-compiler:$scala"
+    scalaTools "org.scala-lang:scala-library:$scala"
+
+    compile "org.scala-lang:scala-library:$scala"
+    compile "org.scalaz:scalaz-core_$scala:$scalaz"
+
+    testCompile "org.scalatest:scalatest_$scala:$scalaTest"
+  }
+
+  test << {
+    ant.taskdef(name: 'scalatest', classname: 'org.scalatest.tools.ScalaTestAntTask', classpath: classpath.asPath)
+    ant.scalatest(runpath: testClassesDir, haltonfailure: 'true', fork: 'false') {
+      reporter(type: 'stdout')
+    }
+  }
+}
+
+jar {
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+  manifest { attributes 'Main-Class': 'magnify.server.Runner' }
+}
+
+ideaProject {
+  ext.javaVersion = 1.6
+}
