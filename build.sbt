@@ -14,3 +14,5 @@ libraryDependencies ++= Seq(
   "cc.spray" % "spray-server" % "1.0-M1",
   "cc.spray" % "spray-can" % "1.0-M1",
   "com.typesafe.akka" % "akka-actor" % "2.0.1")
+
+assemblySettings

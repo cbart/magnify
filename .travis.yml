@@ -4,4 +4,4 @@ jdk:
   - oraclejdk7
   - openjdk6
   - openjdk7
-script: sbt compile
+script: sbt assembly
