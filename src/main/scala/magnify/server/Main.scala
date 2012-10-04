@@ -1,47 +1,40 @@
-/*
- * Copyright (C) 2011-2012 spray.cc
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package magnify.server
 
-import cc.spray.io.IoWorker
+import akka.actor.{ActorSystem, Props, actorRef2Scala}
 import cc.spray.can.server.HttpServer
-import akka.actor._
+import cc.spray.io.IoWorker
 import cc.spray.io.pipelines.MessageHandlerDispatch
+import cc.spray.HttpService
+import cc.spray.SprayCanRootService
 
 object Main extends App {
-  // we need an ActorSystem to host our application in
   val system = ActorSystem("SimpleHttpServer")
-
-  // the handler actor replies to incoming HttpRequests
-  val handler = system.actorOf(Props[TestService])
+  val mainModule = new GraphService {
+    implicit def actorSystem = system
+  }
+  val httpService = system.actorOf(
+    props = Props(new HttpService(mainModule.graphService)),
+    name = "http-service"
+  )
+  val rootService = system.actorOf(
+    props = Props(new SprayCanRootService(httpService)),
+    name = "root-service"
+  )
 
   // every spray-can HttpServer (and HttpClient) needs an IoWorker for low-level network IO
   // (but several servers and/or clients can share one)
   val ioWorker = new IoWorker(system).start()
 
   // create and start the spray-can HttpServer, telling it that we want requests to be
-  // handled by our singleton handler
-  val server = system.actorOf(
-    props = Props(new HttpServer(ioWorker, MessageHandlerDispatch.SingletonHandler(handler))),
+  // handled by the root service actor
+  val sprayCanServer = system.actorOf(
+    Props(new HttpServer(ioWorker, MessageHandlerDispatch.SingletonHandler(rootService))),
     name = "http-server"
   )
 
   // a running HttpServer can be bound, unbound and rebound
   // initially to need to tell it where to bind to
-  server ! HttpServer.Bind("localhost", 8080)
+  sprayCanServer ! HttpServer.Bind("localhost", 8080)
 
   // finally we drop the main thread but hook the shutdown of
   // our IoWorker into the shutdown of the applications ActorSystem

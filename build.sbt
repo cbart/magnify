@@ -13,6 +13,7 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   "cc.spray" % "spray-server" % "1.0-M1",
   "cc.spray" % "spray-can" % "1.0-M1",
-  "com.typesafe.akka" % "akka-actor" % "2.0.1")
+  "com.typesafe.akka" % "akka-actor" % "2.0.1",
+  "com.tinkerpop.blueprints" % "blueprints-core" % "2.1.0")
 
 assemblySettings
