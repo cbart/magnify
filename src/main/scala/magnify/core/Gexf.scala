@@ -1,15 +1,16 @@
-package magnify.server
+package magnify.core
 
 import com.tinkerpop.blueprints.Direction._
 import com.tinkerpop.blueprints.Graph
-import com.tinkerpop.blueprints.Vertex
 import scala.collection.JavaConversions._
-import scala.xml.NodeSeq.seqToNodeSeq
 
 object Gexf {
   implicit def apply(graph: Graph) = new Gexf(graph)
 }
 
+/**
+ * [[com.tinkerpop.blueprints.Graph]] pimp that adds GEXF serialization.
+ */
 class Gexf (graph: Graph) {
   def toXml =
       <gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">

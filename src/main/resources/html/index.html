@@ -4,6 +4,7 @@
     <title>Graph</title>
     <script src="/js/sigma.min.js"></script>
     <script src="/js/sigma.parseGexf.js"></script>
+    <script src="/js/upclick.min.js"></script>
     <script>
       function init() {
         var sigInst = sigma.init(document.getElementById('example-graph')).drawingProperties({
@@ -28,6 +29,15 @@
        
         // Draw the graph :
         sigInst.draw();
+        
+        var uploader = document.getElementById('uploader');
+        upclick({
+          element: uploader,
+          action: '/upload.json?',
+          oncomplete: function (responseData) {
+            console.log(responseData);
+          }
+        });
       }
        
       if (document.addEventListener) {
@@ -56,8 +66,8 @@
   </head>
   <body>
     <div class="sigma-parent">
-    <div class="sigma-expand" id="example-graph">
+      <div class="sigma-expand" id="example-graph"></div>
     </div>
-    </canvas>
+    <input type="button" id="uploader" value="Upload"/>
   </body>
 </html>
