@@ -16,13 +16,13 @@ trait WebApiTest extends SprayTest with DefaultUnmarshallers {
 
   override implicit val actorSystem = system  // Use the `ActorSystem` from akka TestKit.
 
-  protected val get = request(HttpMethods.GET, _)
+  protected val get = request(HttpMethods.GET) _
 
-  protected val put = request(HttpMethods.PUT, _)
+  protected val put = request(HttpMethods.PUT) _
 
-  protected val post = request(HttpMethods.POST, _)
+  protected val post = request(HttpMethods.POST) _
 
-  protected def request(method: HttpMethod, uri: String) =
+  protected def request(method: HttpMethod)(uri: String) =
     testRoot(HttpRequest(uri = uri, method = method))
 
   private def testRoot(request: HttpRequest): HttpResponse = {
