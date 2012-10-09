@@ -9,8 +9,8 @@ final class Frontend (override implicit val actorSystem: ActorSystem) extends Di
   val route = {
     (pathPrefix("frontend") & get) {
       static("html" -> "html") ~
-      static("js" -> "javascript", `application/javascript`) ~
-      static("style" -> "css", `text/css`)
+      static("js" -> "javascript", mediaType = `application/javascript`) ~
+      static("style" -> "css", mediaType = `text/css`)
     }
   }
 
