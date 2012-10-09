@@ -1,17 +1,20 @@
 package magnify.web.api.routes
 
 import magnify.core
-import magnify.testing.web.WebApiTest
+import magnify.testing.web.{StoppingActorSystem, WebApiTest}
 import magnify.web.api
 
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
+import akka.testkit.TestKit
+import akka.actor.ActorSystem
 
 @RunWith(classOf[JUnitRunner])
-class DataTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with WebApiTest
-    with core.Module with api.Module {
+class DataTest extends TestKit(ActorSystem()) with FunSuite with ShouldMatchers
+    with BeforeAndAfterAll with WebApiTest with StoppingActorSystem with core.Module
+    with api.Module {
   test("GET /data/projects/list.json should respond with stubbed project list") {
     get("/data/projects/list.json").asString should equal("LIST.JSON")
   }
@@ -26,9 +29,5 @@ class DataTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with 
 
   test("POST /data/projects should respond with stubbed message") {
     post("/data/projects").asString should equal("created new project from zip sources")
-  }
-
-  override def afterAll() {
-    actorSystem.shutdown()
   }
 }
