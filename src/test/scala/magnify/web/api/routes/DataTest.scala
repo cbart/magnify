@@ -1,20 +1,19 @@
 package magnify.web.api.routes
 
-import magnify.core
+import magnify.core.Core
 import magnify.testing.web.{StoppingActorSystem, WebApiTest}
-import magnify.web.api
 
+import akka.actor.ActorSystem
+import akka.testkit.TestKit
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
-import akka.testkit.TestKit
-import akka.actor.ActorSystem
 
 @RunWith(classOf[JUnitRunner])
 class DataTest extends TestKit(ActorSystem()) with FunSuite with ShouldMatchers
-    with BeforeAndAfterAll with WebApiTest with StoppingActorSystem with core.Module
-    with api.Module {
+    with BeforeAndAfterAll with WebApiTest with StoppingActorSystem with Core
+    with Routes {
   test("GET /data/projects/list.json should respond with stubbed project list") {
     get("/data/projects/list.json").asString should equal("LIST.JSON")
   }

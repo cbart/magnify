@@ -1,8 +1,7 @@
 package magnify.testing.web
 
-import magnify.web.api
+import magnify.web.api.routes.Routes
 
-import akka.dispatch.ExecutionContext
 import akka.util.Duration
 import akka.util.duration._
 import akka.testkit.TestKit
@@ -12,7 +11,7 @@ import cc.spray.test.SprayTest
 import cc.spray.typeconversion.DefaultUnmarshallers
 
 trait WebApiTest extends SprayTest with DefaultUnmarshallers {
-  this: TestKit with api.Module =>
+  this: TestKit with Routes =>
 
   override implicit val actorSystem = system  // Use the `ActorSystem` from akka TestKit.
 

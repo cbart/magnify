@@ -1,20 +1,21 @@
 package magnify.web.http
 
-import cc.spray.io.IoWorker
+import magnify.core.Core
+import magnify.web.api.routes.Routes
+
 import akka.actor.Props
-import cc.spray.can.server.HttpServer
-import cc.spray.io.pipelines.MessageHandlerDispatch
 import cc.spray.SprayCanRootService
-import magnify.web.api
-import magnify.core
+import cc.spray.can.server.HttpServer
+import cc.spray.io.IoWorker
+import cc.spray.io.pipelines.MessageHandlerDispatch
 
 /**
  * Web server actors.
  *
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-trait Module {
-  this: api.Module with core.Module =>
+trait Http {
+  this: Routes with Core =>
 
   // Low-level network IO.
   val ioWorker = new IoWorker(actorSystem).start()

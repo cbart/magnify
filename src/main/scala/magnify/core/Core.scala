@@ -2,6 +2,6 @@ package magnify.core
 
 import akka.actor.ActorSystem
 
-trait Module {
+trait Core {
   implicit val actorSystem: ActorSystem
 }
