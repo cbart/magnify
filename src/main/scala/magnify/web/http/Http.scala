@@ -1,42 +1,29 @@
 package magnify.web.http
 
-import magnify.core.Core
-import magnify.web.api.routes.Routes
-
-import akka.actor.Props
-import cc.spray.SprayCanRootService
-import cc.spray.can.server.HttpServer
+import akka.actor.{ActorRef, ActorSystem}
 import cc.spray.io.IoWorker
-import cc.spray.io.pipelines.MessageHandlerDispatch
+import com.google.inject._
+import com.google.inject.name.Names
 
 /**
  * Web server actors.
  *
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-trait Http {
-  this: Routes with Core =>
-
-  // Low-level network IO.
-  val ioWorker = new IoWorker(actorSystem).start()
-
-  val sprayCanRootService = actorSystem.actorOf(
-    props = Props(new SprayCanRootService(rootService)),
-    name = "spray-can-root-service"
-  )
-
-  // Create and start the spray-can HttpServer.
-  val sprayCanServer = actorSystem.actorOf(
-    Props(new HttpServer(ioWorker,
-      MessageHandlerDispatch.SingletonHandler(sprayCanRootService))),
-    name = "http-server"
-  )
-
-  // At which port the HTTP server listens at.
-  sprayCanServer ! HttpServer.Bind("localhost", 8080)
-
-  // Hook IoWorker shutdown when actor system goes down.
-  actorSystem.registerOnTermination {
-    ioWorker.stop()
+final class Http extends AbstractModule {
+  protected override def configure() {
+    requireBinding(classOf[ActorSystem])
+    requireBinding(Key.get(classOf[ActorRef], Names.named("root-service")))
+    bind(classOf[IoWorker])
+        .toProvider(classOf[IoWorkerProvider])
+        .in(Scopes.SINGLETON)
+    bind(classOf[ActorRef])
+        .annotatedWith(Names.named("spray-can-root-service"))
+        .toProvider(classOf[SprayCanRootServiceProvider])
+        .in(Scopes.SINGLETON)
+    bind(classOf[ActorRef])
+        .annotatedWith(Names.named("http-server"))
+        .toProvider(classOf[SprayCanProvider])
+        .in(Scopes.SINGLETON)
   }
 }

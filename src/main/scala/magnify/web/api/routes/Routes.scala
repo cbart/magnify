@@ -1,32 +1,30 @@
 package magnify.web.api.routes
 
-import magnify.core.Core
+import akka.actor.{ActorRef, ActorSystem}
+import cc.spray.Route
+import com.google.inject._
+import com.google.inject.multibindings.Multibinder
+import com.google.inject.name.Names
 
-import akka.actor.{ActorRef, Props}
-import cc.spray._
-import cc.spray.http.{StatusCodes, HttpResponse}
-
-trait Routes extends Frontend with Data with Control {
-  this: Core =>
-
-  private def routes =
-    frontendDirectives.route ::
-    dataDirectives.route ::
-    controlDirectives.route :: Nil
-
-  private def rejectionHandler: PartialFunction[List[Rejection], HttpResponse] = {
-    case _ => HttpResponse(StatusCodes.BadRequest)
+final class Routes extends AbstractModule {
+  protected override def configure() {
+    requireBinding(classOf[ActorSystem])
+    val routeBinder =
+      Multibinder.newSetBinder(binder(), new TypeLiteral[Route]() {}, Names.named("routes"))
+    routeBinder.addBinding().toProvider(classOf[Control]).in(Scopes.SINGLETON)
+    routeBinder.addBinding().toProvider(classOf[Data]).in(Scopes.SINGLETON)
+    routeBinder.addBinding().toProvider(classOf[Frontend]).in(Scopes.SINGLETON)
+    bind(classOf[ActorRef])
+        .annotatedWith(Names.named("root-service"))
+        .toProvider(classOf[RootServiceProvider])
+        .in(Scopes.SINGLETON)
   }
+}
 
-  private val svc: Route => ActorRef = { route =>
-    actorSystem.actorOf(Props(new HttpService(route, rejectionHandler)))
-  }
+private class OneProvider extends Provider[String] {
+  override def get = "One"
+}
 
-  val rootService = actorSystem.actorOf(
-    props = Props(new RootService(
-      svc(routes.head),
-      routes.tail.map(svc): _*
-    )),
-    name = "root-service"
-  )
+private class TwoProvider extends Provider[String] {
+  override def get = "Two"
 }

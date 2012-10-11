@@ -1,42 +1,40 @@
 package magnify.web.api.routes
 
-import magnify.core.Core
-
-import cc.spray.Directives
+import akka.actor.ActorSystem
+import cc.spray.{Directives, Route}
 import cc.spray.directives.{PathEnd, PathElement}
+import cc.spray.http.HttpMethods.{GET, PUT, POST}
+import com.google.inject.{Provider, Inject}
 
 /**
- * Data manipulation HTTP REST api.
+ * Data manipulation REST routes.
  *
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-trait Data {
-  this: Core =>
+private[routes] final class Data @Inject() (actorSystem: ActorSystem) extends Provider[Route] {
+  val directives = Directives(actorSystem)
 
-  private[routes] final class DataDirectives extends Directives {
-    override def actorSystem = Data.this.actorSystem
+  import directives._
 
-    val route = {
-      pathPrefix("data" / "projects") {
-        (path("list.json") & get) {
-          completeWith("LIST.JSON")
-        } ~
-        pathPrefix(PathElement) { project =>
-          pathPrefix("head") {
-            (path("whole.gexf") & get) {
-              completeWith("whole.gexf for %s".format(project))
-            } ~
-            (path("calls") & put) {
-              completeWith("uploaded calls.csv for %s".format(project))
-            }
+  override def get: Route = {
+    pathPrefix("data" / "projects") {
+      (path("list.json") & method(GET)) { context =>
+        completeWith("LIST.JSON")
+      } ~
+      pathPrefix(PathElement) { project =>
+        pathPrefix("head") {
+          (path("whole.gexf") & method(GET)) {
+            completeWith("whole.gexf for %s".format(project))
+          } ~
+          (path("calls") & method(PUT)) {
+            completeWith("uploaded calls.csv for %s".format(project))
           }
-        } ~
-        (path(PathEnd) & post) {
-          completeWith("created new project from zip sources")
         }
+      } ~
+      (path(PathEnd) & method(POST)) {
+        completeWith("created new project from zip sources")
       }
     }
   }
 
-  private[routes] val dataDirectives = new DataDirectives
 }

@@ -1,30 +1,30 @@
 package magnify.web.api.routes
 
-import magnify.core.Core
-
 import akka.util.Duration
 import akka.util.duration._
-import cc.spray.Directives
+import cc.spray._
+import com.google.inject.{Provider, Inject}
+import akka.actor.ActorSystem
 
-trait Control {
-  this: Core =>
+/**
+ * Application controlling routes.
+ *
+ * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
+ */
+private[routes] final class Control @Inject() (actorSystem: ActorSystem) extends Provider[Route] {
+  val directives = Directives(actorSystem)
 
-  private[routes] final class ControlDirectives extends Directives {
-    override def actorSystem = Control.this.actorSystem
+  import directives._
 
-    val route = {
-      path("control" / "stop") { ctx =>
-        ctx.complete("Shutting down in 1 second...")
-        in(1000.millis) {
-          actorSystem.shutdown()
-        }
+  override def get: Route =
+    path("control" / "stop") { ctx =>
+      ctx.complete("Shutting down in 1 second...")
+      in(1000.millis) {
+        actorSystem.shutdown()
       }
     }
 
-    private def in[U](duration: Duration)(body: => U) {
-      actorSystem.scheduler.scheduleOnce(duration, new Runnable { def run() { body } })
-    }
+  private def in[U](duration: Duration)(body: => U) {
+    actorSystem.scheduler.scheduleOnce(duration, new Runnable { def run() { body } })
   }
-
-  private[routes] val controlDirectives = new ControlDirectives
 }

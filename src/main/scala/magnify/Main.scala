@@ -1,20 +1,24 @@
 package magnify
 
-import magnify.core.Core
+import magnify.actor.Actors
 import magnify.web.api.routes.Routes
+import magnify.web.api.view.Views
 import magnify.web.http.Http
 
-import akka.actor.ActorSystem
+import akka.actor.ActorRef
+import cc.spray.can.server.HttpServer
+import com.google.inject.{Guice, Key}
+import com.google.inject.name.Names
 
 object Main extends App {
-  implicit val actorSystem = ActorSystem("Magnify")
+  val injector = Guice.createInjector(
+      new Actors(),
+      new Routes(),
+      new Views(),
+      new Http()
+  )
 
-  class Application(override implicit val actorSystem: ActorSystem)
-      extends Core with Routes with Http
+  val httpServer = injector.getInstance(Key.get(classOf[ActorRef], Names.named("http-server")))
 
-  new Application()
-
-  sys.addShutdownHook {
-    actorSystem.shutdown()
-  }
+  httpServer ! HttpServer.Bind("localhost", 8080)
 }
