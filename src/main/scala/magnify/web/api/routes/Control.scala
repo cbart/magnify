@@ -7,7 +7,7 @@ import com.google.inject.{Provider, Inject}
 import akka.actor.ActorSystem
 
 /**
- * Application controlling routes.
+ * Routes allowing control over the application.
  *
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
