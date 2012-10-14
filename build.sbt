@@ -22,6 +22,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" % "akka-testkit" % "2.0.1",
   "com.tinkerpop.blueprints" % "blueprints-core" % "2.1.0",
   "junit" % "junit" % "4.10",
-  "org.scalatest" %% "scalatest" % "1.8")
+  "org.scalatest" %% "scalatest" % "1.8",
+  "org.mockito" % "mockito-all" % "1.9.0")
 
 assemblySettings
