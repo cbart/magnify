@@ -17,22 +17,23 @@ private[routes] final class Frontend @Inject() (actorSystem: ActorSystem) extend
 
   import directives._
 
+
   override def get: Route =
     (pathPrefix("frontend") & method(GET)) {
-      static("html" -> "html") ~
-      static("js" -> "javascript", mediaType = `application/javascript`) ~
-      static("style" -> "css", mediaType = `text/css`)
+      static("html") ~
+      static("js", mediaType = `application/javascript`) ~
+      static("css", mediaType = `text/css`) ~
+      static("img", mediaType = `image/png`)
     }
 
   /**
-   * Returns a route mapping {{{ pathMapping._1 }}} url prefix to {{{ pathMapping._2 }}} resource
-   * path. Example above.
+   * Returns a route mapping {{{ pathElement }}} url prefix to {{{ pathElement }}} resource path.
+   * Example above.
    */
-  private def static(pathMapping: (String, String), mediaType: MediaType = `text/html`) = {
-    val (urlPrefix, resourcesPath) = pathMapping
-    pathPrefix(urlPrefix) {
+  private def static(pathElement: String, mediaType: MediaType = `text/html`) = {
+    pathPrefix(pathElement) {
       respondWithMediaType(mediaType) {
-        getFromResourceDirectory(resourcesPath)
+        getFromResourceDirectory(pathElement)
       }
     }
   }
