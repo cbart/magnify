@@ -9,12 +9,14 @@ import akka.actor.ActorRef
 import cc.spray.can.server.HttpServer
 import com.google.inject.{Guice, Key}
 import com.google.inject.name.Names
-import magnify.core.Core
+import magnify.features.Features
+import magnify.services.Services
 
 object Main extends App {
   val injector = Guice.createInjector(
       new Actors(),
-      new Core(),
+      new Features(),
+      new Services(),
       new Routes(),
       new Views(),
       new Http()

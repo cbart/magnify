@@ -1,4 +1,4 @@
-package magnify.core
+package magnify.features
 
 import com.tinkerpop.blueprints.Direction._
 import com.tinkerpop.blueprints.Graph

@@ -1,73 +1,73 @@
 <!doctype html>
 <html>
-  <head>
-    <title>Graph</title>
-    <script src="/frontend/js/sigma.min.js"></script>
-    <script src="/frontend/js/sigma.parseGexf.js"></script>
-    <script src="/frontend/js/upclick.min.js"></script>
-    <script>
-      function init() {
-        var sigInst = sigma.init(document.getElementById('example-graph')).drawingProperties({
-          defaultLabelColor: '#fff',
-          defaultLabelSize: 14,
-          defaultLabelBGColor: '#fff',
-          defaultLabelHoverColor: '#000',
-          labelThreshold: 6,
-          defaultEdgeType: 'curve'
-        }).graphProperties({
-          minNodeSize: 0.5,
-          maxNodeSize: 5,
-          minEdgeSize: 1,
-          maxEdgeSize: 1
-        }).mouseProperties({
-          maxRatio: 32
-        });
+<head>
+<title>Graph</title>
+<script src="/frontend/js/sigma.min.js"></script>
+<script src="/frontend/js/sigma.parseGexf.js"></script>
+<script src="/frontend/js/upclick.min.js"></script>
+<script>
+  function init() {
+    var sigInst = sigma.init(document.getElementById('example-graph')).drawingProperties({
+      defaultLabelColor: '#fff',
+      defaultLabelSize: 14,
+      defaultLabelBGColor: '#fff',
+      defaultLabelHoverColor: '#000',
+      labelThreshold: 6,
+      defaultEdgeType: 'curve'
+    }).graphProperties({
+      minNodeSize: 0.5,
+      maxNodeSize: 5,
+      minEdgeSize: 1,
+      maxEdgeSize: 1
+    }).mouseProperties({
+      maxRatio: 32
+    });
 
-        // Parse a GEXF encoded file to fill the graph
-        // (requires "sigma.parseGexf.js" to be included)
-        sigInst.parseGexf('/data/projects/0/head/whole.gexf');
+    // Parse a GEXF encoded file to fill the graph
+    // (requires "sigma.parseGexf.js" to be included)
+    sigInst.parseGexf('/data/projects/0/head/whole.gexf');
 
-        // Draw the graph :
-        sigInst.draw();
+    // Draw the graph :
+    sigInst.draw();
 
-        var uploader = document.getElementById('uploader');
-        upclick({
-          element: uploader,
-          action: '/data/projects?',
-          oncomplete: function (responseData) {
-            console.log(responseData);
-          }
-        });
+    var uploader = document.getElementById('uploader');
+    upclick({
+      element: uploader,
+      action: '/data/projects?',
+      oncomplete: function (responseData) {
+        console.log(responseData);
       }
+    });
+  }
 
-      if (document.addEventListener) {
-        document.addEventListener("DOMContentLoaded", init, false);
-      } else {
-        window.onload = init;
-      }
-    </script>
-    <style>
-      .sigma-parent {
-        position: relative;
-        border-radius: 4px;
-        -moz-border-radius: 4px;
-        -webkit-border-radius: 4px;
-        background: #222;
-        height: 500px;
-      }
-      .sigma-expand {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="sigma-parent">
-      <div class="sigma-expand" id="example-graph"></div>
-    </div>
-    <input type="button" id="uploader" value="Upload"/>
-  </body>
+  if (document.addEventListener) {
+    document.addEventListener("DOMContentLoaded", init, false);
+  } else {
+    window.onload = init;
+  }
+</script>
+<style>
+  .sigma-parent {
+    position: relative;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    background: #222;
+    height: 500px;
+  }
+  .sigma-expand {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+</style>
+</head>
+<body>
+<input type="button" id="uploader" value="Add new project"/>
+<div class="sigma-parent">
+  <div class="sigma-expand" id="example-graph"></div>
+</div>
+</body>
 </html>

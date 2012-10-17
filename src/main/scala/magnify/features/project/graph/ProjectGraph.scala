@@ -1,20 +1,23 @@
-package magnify.core
+package magnify.features.project.graph
 
 import akka.actor._
 import com.tinkerpop.blueprints.Graph
-import com.google.inject.{Provider, Inject}
 import com.tinkerpop.blueprints.impls.tg.TinkerGraph
+import com.google.inject.{Provider, Inject}
+import com.google.inject.name.Named
+import magnify.services.project.repository.GetGraph
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-final class ProjectGraph @Inject() (actorSystem: ActorSystem) extends Provider[ActorRef] {
+final private[features] class ProjectGraph @Inject() (actorSystem: ActorSystem,
+    @Named("project-repository") repository: ActorRef) extends Provider[ActorRef] {
   override def get: ActorRef = actorSystem.actorOf(
     props = Props(
       new Actor {
         override protected def receive = {
           case GetProjectGraph(projectName, continuation) =>
-            continuation(exampleGraph)
+            repository ! GetGraph(projectName, g => continuation(g.getOrElse(exampleGraph)))
         }
       }
     ),
@@ -36,5 +39,3 @@ final class ProjectGraph @Inject() (actorSystem: ActorSystem) extends Provider[A
     graph
   }
 }
-
-final case class GetProjectGraph (projectName: String, continuation: Graph => Unit)
