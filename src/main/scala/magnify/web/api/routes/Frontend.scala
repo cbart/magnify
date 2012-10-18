@@ -1,25 +1,22 @@
 package magnify.web.api.routes
 
+import akka.actor.ActorSystem
 import cc.spray._
 import cc.spray.http.MediaTypes._
 import cc.spray.http.MediaType
-import cc.spray.http.HttpMethods.GET
-import com.google.inject.{Provider, Inject}
-import akka.actor.ActorSystem
 
 /**
  * Web Browser frontend routes.
  *
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-private[routes] final class Frontend @Inject() (actorSystem: ActorSystem) extends Provider[Route] {
-  val directives = Directives(actorSystem)
+private[routes] final class Frontend (system: ActorSystem) extends (() => Route) {
+  val directives = Directives(system)
 
   import directives._
 
-
-  override def get: Route =
-    (pathPrefix("frontend") & method(GET)) {
+  override def apply: Route =
+    (pathPrefix("frontend") & get) {
       static("html") ~
       static("js", mediaType = `application/javascript`) ~
       static("css", mediaType = `text/css`) ~

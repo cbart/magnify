@@ -4,27 +4,35 @@ import akka.actor.{ActorRef, ActorSystem}
 import cc.spray.Route
 import com.google.inject._
 import com.google.inject.multibindings.Multibinder
-import com.google.inject.name.Names
+import com.google.inject.name.{Named, Names}
 
-final class Routes extends AbstractModule {
+import scala.collection.JavaConversions._
+
+final class Routes extends PrivateModule {
   protected override def configure() {
     requireBinding(classOf[ActorSystem])
-    val routeBinder =
-      Multibinder.newSetBinder(binder(), new TypeLiteral[Route]() {}, Names.named("routes"))
-    routeBinder.addBinding().toProvider(classOf[Control]).in(Scopes.SINGLETON)
-    routeBinder.addBinding().toProvider(classOf[Data]).in(Scopes.SINGLETON)
-    routeBinder.addBinding().toProvider(classOf[Frontend]).in(Scopes.SINGLETON)
-    bind(classOf[ActorRef])
-        .annotatedWith(Names.named("root-service"))
-        .toProvider(classOf[RootServiceProvider])
-        .in(Scopes.SINGLETON)
+    expose(Key.get(classOf[ActorRef], Names.named("root-service")))
+    val routeBinder = Multibinder.newSetBinder(binder(), new TypeLiteral[() => Route]() {})
+    bindRoute[Control](routeBinder)
+    bindRoute[Data](routeBinder)
+    bindRoute[Frontend](routeBinder)
+    bind(new TypeLiteral[() => ActorRef]() {}).annotatedWith(Names.named("root-service-provider"))
+        .toConstructor(classOf[RootServiceProvider].getConstructor(classOf[ActorSystem], classOf[Iterable[Route]]))
   }
-}
 
-private class OneProvider extends Provider[String] {
-  override def get = "One"
-}
+  private def bindRoute[T <: (() => Route)](multiBinder: Multibinder[() => Route])
+      (implicit manifest: Manifest[T]) {
+    val cls = manifest.erasure.asInstanceOf[Class[T]]
+    val constructor = cls.getConstructor(classOf[ActorSystem])
+    multiBinder.addBinding().toConstructor(constructor)
+  }
 
-private class TwoProvider extends Provider[String] {
-  override def get = "Two"
+  @Provides
+  private def routes(factories: java.util.Set[() => Route]): Iterable[Route] =
+    factories.map(_()).toSet
+
+  @Provides
+  @Named("root-service")
+  private def rootService(@Named("root-service-provider") provider: () => ActorRef): ActorRef =
+    provider()
 }
