@@ -1,21 +1,24 @@
 package magnify.web.api.routes
 
-import akka.testkit.TestKit
+import magnify.testing.{GuiceTestModules, ActorsSuite}
+
+import org.scalatest.matchers.ShouldMatchers
+
 import akka.actor.{ActorRef, ActorSystem}
+import akka.testkit.TestKit
 import cc.spray.Route
 import com.google.inject._
 import com.google.inject.name.Names
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
-final class RoutesTest extends TestKit(ActorSystem()) with FunSuite with ShouldMatchers
-    with BeforeAndAfterAll {
+final class RoutesTest extends TestKit(ActorSystem()) with FunSuite with ActorsSuite
+    with ShouldMatchers with GuiceTestModules {
 
   val injector = Guice.createInjector(new ActorsModule(), new Routes)
 
@@ -28,20 +31,6 @@ final class RoutesTest extends TestKit(ActorSystem()) with FunSuite with ShouldM
     intercept[ConfigurationException] {
       val key = Key.get(new TypeLiteral[Set[Route]]() {})
       injector.getInstance(key)
-    }
-  }
-
-  private final class ActorsModule extends AbstractModule {
-    def configure() {
-      bind(classOf[ActorSystem]).toInstance(system)
-    }
-  }
-
-  override protected def afterAll() {
-    try {
-      system.shutdown()
-    } finally {
-      super.afterAll()
     }
   }
 }

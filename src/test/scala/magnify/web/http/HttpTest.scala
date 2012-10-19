@@ -1,10 +1,12 @@
 package magnify.web.http
 
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import akka.testkit.TestKit
+import magnify.testing.{ActorsSuite, GuiceTestModules}
+
 import akka.actor.{ActorRef, ActorSystem}
+import akka.testkit.TestKit
+import org.junit.runner.RunWith
+import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import com.google.inject._
 import com.google.inject.name.Names
@@ -13,8 +15,8 @@ import com.google.inject.name.Names
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
-final class HttpTest extends TestKit(ActorSystem()) with FunSuite with ShouldMatchers
-    with BeforeAndAfterAll {
+final class HttpTest extends TestKit(ActorSystem()) with FunSuite with ActorsSuite
+    with ShouldMatchers with GuiceTestModules {
   test("should fail to create injector without root service") {
     intercept[CreationException] {
       Guice.createInjector(new Http(), new ActorsModule())
@@ -29,27 +31,5 @@ final class HttpTest extends TestKit(ActorSystem()) with FunSuite with ShouldMat
     val injector = Guice.createInjector(new Http(), new ActorsModule(),
       new MockActor("root-service"))
     injector.getInstance(Key.get(classOf[ActorRef], Names.named("http-server")))
-  }
-
-  private final class ActorsModule extends AbstractModule {
-    def configure() {
-      bind(classOf[ActorSystem]).toInstance(system)
-    }
-  }
-
-  private final class MockActor (name: String) extends AbstractModule {
-    def configure() {
-      bind(classOf[ActorRef])
-          .annotatedWith(Names.named(name))
-          .toInstance(testActor)
-    }
-  }
-
-  override protected def afterAll() {
-    try {
-      system.shutdown()
-    } finally {
-      super.afterAll()
-    }
   }
 }
