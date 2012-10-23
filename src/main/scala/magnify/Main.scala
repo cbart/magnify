@@ -6,11 +6,11 @@ import magnify.web.api.view.Views
 import magnify.web.http.Http
 
 import akka.actor.ActorRef
-import cc.spray.can.server.HttpServer
 import com.google.inject.{Guice, Key}
 import com.google.inject.name.Names
 import magnify.features.Features
 import magnify.services.Services
+import spray.can.server.HttpServer
 
 object Main extends App {
   val injector = Guice.createInjector(

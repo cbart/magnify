@@ -1,19 +1,17 @@
 package magnify.web.api.routes
 
 import akka.actor.ActorSystem
-import cc.spray._
-import cc.spray.http.MediaTypes._
-import cc.spray.http.MediaType
+import spray.routing._
+import spray.http._
 
 /**
  * Web Browser frontend routes.
  *
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-private[routes] final class Frontend (system: ActorSystem) extends (() => Route) {
-  val directives = Directives(system)
-
-  import directives._
+private[routes] final class Frontend (implicit system: ActorSystem) extends (() => Route) {
+  import Directives._
+  import MediaTypes._
 
   override def apply: Route =
     (pathPrefix("frontend") & get) {

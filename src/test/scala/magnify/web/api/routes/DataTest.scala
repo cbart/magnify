@@ -3,18 +3,31 @@ package magnify.web.api.routes
 import akka.util.duration._
 import cc.spray.http.{HttpMethod, HttpRequest}
 import cc.spray.http.HttpMethods._
-import cc.spray.test.SprayTest
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.mock.MockitoSugar._
+import magnify.web.api.controllers.DataController
+import org.mockito.Mockito.when
+import org.mockito.Matchers._
+import akka.testkit.TestKit
+import akka.actor.ActorSystem
+import magnify.testing.{SpraySuite, ActorsSuite}
+import cc.spray.RequestContext
+import org.mockito.stubbing.Answer
+import org.mockito.invocation.InvocationOnMock
+import cc.spray.typeconversion.DefaultMarshallers._
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
-final class DataTest extends FunSuite with SprayTest with ShouldMatchers with BeforeAndAfterAll {
-  val route = new Data(actorSystem).apply
+final class DataTest extends TestKit(ActorSystem()) with FunSuite with ActorsSuite with SpraySuite
+    with ShouldMatchers {
+  val controller = mock[DataController]
+
+  val route = new Data(system, controller).apply
 
   implicit def request(path: String) = new {
     def @@(method: HttpMethod): RoutingResultWrapper =
@@ -34,7 +47,14 @@ final class DataTest extends FunSuite with SprayTest with ShouldMatchers with Be
   }
 
   test("should respond to zip post") {
-    responseContent("/data/projects" @@ POST) should be("zip uploaded")
+    when(controller.uploadSources(any(classOf[RequestContext]))).thenAnswer(new Answer[Void] {
+      def answer(invocation: InvocationOnMock) = {
+        val requestContext = invocation.getArguments().head.asInstanceOf[RequestContext]
+        requestContext.complete("TEST RESPONSE")
+        null
+      }
+    })
+    responseContent("/data/projects" @@ POST) should be("TEST RESPONSE")
   }
 
   private def responseContent(result: RoutingResultWrapper): String = {
@@ -42,11 +62,7 @@ final class DataTest extends FunSuite with SprayTest with ShouldMatchers with Be
     new String(content.buffer)
   }
 
-  override protected def afterAll() {
-    try {
-      actorSystem.shutdown()
-    } finally {
-      super.afterAll()
-    }
-  }
+  //private def when[T](mockInvocation: => T) = new {
+  //  def then(answer)
+  //}
 }

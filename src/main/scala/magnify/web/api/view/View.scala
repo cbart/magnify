@@ -10,7 +10,7 @@ private[view] final class View @Inject() (actorSystem: ActorSystem) extends Prov
   override def get: ActorRef = actorSystem.actorOf(
     props = Props(
       new Actor {
-        override protected def receive = {
+        override def receive = {
           case model: ViewModel => model.respond()
         }
       }

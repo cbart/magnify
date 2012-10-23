@@ -15,7 +15,7 @@ final private[features] class ProjectGraph @Inject() (actorSystem: ActorSystem,
   override def get: ActorRef = actorSystem.actorOf(
     props = Props(
       new Actor {
-        override protected def receive = {
+        override def receive = {
           case GetProjectGraph(projectName, continuation) =>
             repository ! GetGraph(projectName, g => continuation(g.getOrElse(exampleGraph)))
         }

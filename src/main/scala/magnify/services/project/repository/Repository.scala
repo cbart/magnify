@@ -15,7 +15,7 @@ private[services] class Repository @Inject() (actorSystem: ActorSystem) extends 
       new Actor {
         private val projects = mutable.Map.empty[String, Graph]
 
-        override protected def receive = {
+        override def receive = {
           case AddProject(name, graph) => projects.put(name, graph)
           case GetGraph(name, continuation) => continuation(projects.get(name))
           case ListProjects(continuation) => continuation(projects.keys.toSeq)

@@ -2,10 +2,12 @@ package magnify.features
 
 import com.tinkerpop.blueprints.Direction._
 import com.tinkerpop.blueprints.Graph
+
 import scala.collection.JavaConversions._
+import scala.language.implicitConversions
 
 object Gexf {
-  implicit def apply(graph: Graph) = new Gexf(graph)
+  implicit def toGexf(graph: Graph) = new Gexf(graph)
 }
 
 /**
