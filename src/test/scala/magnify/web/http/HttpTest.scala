@@ -1,22 +1,18 @@
 package magnify.web.http
 
-import magnify.testing.{ActorsSuite, GuiceTestModules}
+import magnify.testing.{ActorsTestBase, GuiceTestModules}
 
-import akka.actor.{ActorRef, ActorSystem}
-import akka.testkit.TestKit
-import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
+import akka.actor.ActorRef
 import com.google.inject._
 import com.google.inject.name.Names
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
-final class HttpTest extends TestKit(ActorSystem()) with FunSuite with ActorsSuite
-    with ShouldMatchers with GuiceTestModules {
+final class HttpTest extends ActorsTestBase with GuiceTestModules {
   test("should fail to create injector without root service") {
     intercept[CreationException] {
       Guice.createInjector(new Http(), new ActorsModule())
