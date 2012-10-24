@@ -24,16 +24,17 @@ final class ExtractGraphTest extends FunSuite with ShouldMatchers {
   private val toInputStream: String => InputStream =
     string => new ByteArrayInputStream(string.getBytes("utf-8"))
 
-  private case class OnlyVertices (vertices: Seq[String]) extends Graph
+  private def makeGraph(identifiers: Seq[String]): Graph =
+    Graph(identifiers.map(id => id -> Seq(id)).toMap)
 
   private object mockReader extends ExtractGraph.Reader {
     def apply[T](f: InputStream => Seq[T]) = mockSources flatMap (toInputStream andThen f)
   }
 
-  val extract = new ExtractGraph(readString, OnlyVertices)
+  val extract = new ExtractGraph(readString, makeGraph)
 
   test("should create graph with same sequence as mock sources") {
-    val OnlyVertices(extracted) = extract(mockReader)
-    extracted should equal(mockSources)
+    val Graph(extracted) = extract(mockReader)
+    extracted.keys.toSet should equal(mockSources.toSet)
   }
 }

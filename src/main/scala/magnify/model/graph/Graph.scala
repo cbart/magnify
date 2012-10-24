@@ -3,5 +3,5 @@ package magnify.model.graph
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-trait Graph {
+final case class Graph (imports: Map[String, Seq[String]]) {
 }
