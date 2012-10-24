@@ -6,5 +6,5 @@ import java.io.InputStream
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 trait SourceReader {
-  def map[A](f: InputStream => A): Seq[A]
+  def flatMap[A](f: InputStream => Seq[A]): Seq[A]
 }

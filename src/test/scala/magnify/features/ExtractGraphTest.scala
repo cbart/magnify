@@ -15,11 +15,11 @@ import org.scalatest.matchers.ShouldMatchers
 final class ExtractGraphTest extends FunSuite with ShouldMatchers {
   private val mockSources = Seq("mock", "Java", "sources")
 
-  private def readString: InputStream => String =
+  private def readString: InputStream => Seq[String] =
     stream => Source
       .fromInputStream(stream, "utf-8")
       .getLines
-      .mkString("\n")
+      .mkString("\n") :: Nil
 
   private val toInputStream: String => InputStream =
     string => new ByteArrayInputStream(string.getBytes("utf-8"))
@@ -27,7 +27,7 @@ final class ExtractGraphTest extends FunSuite with ShouldMatchers {
   private case class OnlyVertices (vertices: Seq[String]) extends Graph
 
   private object mockReader extends ExtractGraph.Reader {
-    def apply[T](f: InputStream => T) = mockSources map (toInputStream andThen f)
+    def apply[T](f: InputStream => Seq[T]) = mockSources flatMap (toInputStream andThen f)
   }
 
   val extract = new ExtractGraph(readString, OnlyVertices)
