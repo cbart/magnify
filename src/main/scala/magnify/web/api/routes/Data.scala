@@ -10,7 +10,7 @@ import spray.routing._
  *
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-private[routes] final class Data (implicit system: ActorSystem, controller: DataController)
+private[routes] final class Data (system: ActorSystem)
     extends (() => Route) {
   import Directives._
 
@@ -30,7 +30,7 @@ private[routes] final class Data (implicit system: ActorSystem, controller: Data
         }
       } ~
       (path(PathEnd) & post) {
-        controller uploadSources _
+        complete("temp")
       }
     }
   }

@@ -9,7 +9,7 @@ import spray.routing.{RequestContext, Directives, Route}
  *
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-private[routes] final class Control (implicit system: ActorSystem) extends (() => Route) {
+private[routes] final class Control (system: ActorSystem) extends (() => Route) {
   import Directives._
 
   override def apply: Route =

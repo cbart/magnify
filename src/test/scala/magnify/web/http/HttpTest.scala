@@ -24,12 +24,12 @@ final class HttpTest extends TestKit(ActorSystem()) with FunSuite with ActorsSui
   }
 
   test("should succeed to create injector with actor system and root service provided") {
-    Guice.createInjector(new Http(), new ActorsModule(), new MockActor("root-service"))
+    Guice.createInjector(new Http(), new ActorsModule(), new MockActor("http-service"))
   }
 
   test("should expose http server actor") {
     val injector = Guice.createInjector(new Http(), new ActorsModule(),
-      new MockActor("root-service"))
+      new MockActor("http-service"))
     injector.getInstance(Key.get(classOf[ActorRef], Names.named("http-server")))
   }
 }

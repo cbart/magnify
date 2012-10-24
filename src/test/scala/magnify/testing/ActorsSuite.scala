@@ -1,13 +1,15 @@
 package magnify.testing
 
+import akka.actor.ActorSystem
 import org.scalatest.{BeforeAndAfterAll, Suite}
-import akka.testkit.TestKit
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 trait ActorsSuite extends BeforeAndAfterAll {
-  this: TestKit with Suite =>
+  this: Suite =>
+
+  protected def system: ActorSystem
 
   override protected def afterAll() {
     try {

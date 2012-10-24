@@ -6,12 +6,12 @@ import org.scalatest.matchers.ShouldMatchers
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestKit
-import cc.spray.Route
 import com.google.inject._
 import com.google.inject.name.Names
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import spray.routing.Route
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -22,9 +22,8 @@ final class RoutesTest extends TestKit(ActorSystem()) with FunSuite with ActorsS
 
   val injector = Guice.createInjector(new ActorsModule(), new Routes)
 
-  test("should inject root service actor") {
-    val key = Key.get(classOf[ActorRef], Names.named("root-service"))
-    injector.getInstance(key)
+  test("should inject http service actor") {
+    injector.getInstance(Key.get(classOf[ActorRef], Names.named("http-service")))
   }
 
   test("should not expose routes") {
