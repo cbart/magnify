@@ -1,5 +1,8 @@
 package magnify.web.api.routes
 
+import magnify.common.guice.constructor
+import magnify.web.api.controllers.DataController
+
 import akka.actor._
 import com.google.inject._
 import com.google.inject.multibindings.Multibinder
@@ -10,19 +13,13 @@ import scala.collection.JavaConversions._
 
 final class Routes extends PrivateModule {
   protected override def configure() {
-    requireBinding(classOf[ActorSystem])
     expose(Key.get(classOf[ActorRef], Names.named("http-service")))
+    requireBinding(classOf[ActorSystem])
+    requireBinding(classOf[DataController])
     val routeBinder = Multibinder.newSetBinder(binder(), new TypeLiteral[() => Route]() {})
-    bindRoute[Control](routeBinder)
-    bindRoute[Data](routeBinder)
-    bindRoute[Frontend](routeBinder)
-  }
-
-  private def bindRoute[T <: (() => Route)](multiBinder: Multibinder[() => Route])
-      (implicit manifest: Manifest[T]) {
-    val cls = manifest.runtimeClass.asInstanceOf[Class[T]]
-    val constructor = cls.getConstructor(classOf[ActorSystem])
-    multiBinder.addBinding().toConstructor(constructor)
+    routeBinder.addBinding().toConstructor(constructor[Control])
+    routeBinder.addBinding().toConstructor(constructor[Data])
+    routeBinder.addBinding().toConstructor(constructor[Frontend])
   }
 
   @Provides

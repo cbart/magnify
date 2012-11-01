@@ -1,9 +1,8 @@
 package magnify.web.api.routes
 
+import akka.util.duration._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
-import scala.concurrent.duration._
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)

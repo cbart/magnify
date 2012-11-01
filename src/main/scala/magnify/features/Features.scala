@@ -1,15 +1,16 @@
 package magnify.features
 
-import akka.actor.ActorSystem
+import magnify.common.guice.constructor
+
 import com.google.inject.AbstractModule
 
 /**
- * Module grouping implementations of Magnify features.
- *
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 final class Features extends AbstractModule {
   def configure() {
-    requireBinding(classOf[ActorSystem])
+    requireBinding(classOf[Imports])
+    requireBinding(classOf[GraphRepository])
+    bind(classOf[SourceUseCase]).toConstructor(constructor[AddSources])
   }
 }

@@ -3,8 +3,14 @@ package magnify.web.api.routes
 import magnify.web.api.controllers.DataController
 
 import org.junit.runner.RunWith
+import org.mockito.Mockito.when
+import org.mockito.invocation.InvocationOnMock
+import org.mockito.stubbing.Answer
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
+import spray.http._
+import spray.http.MediaTypes._
+import spray.routing.RequestContext
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -13,29 +19,22 @@ import org.scalatest.mock.MockitoSugar._
 final class DataTest extends RouteTestBase {
   val controller = mock[DataController]
 
-  val route = new Data(system).apply
+  val route = new Data(system, controller).apply
 
-  test("should render projects list") {
-    Get("/data/projects/list.json") ~> route ~> check {
-      entityAs[String] should be("LIST.JSON")
-    }
-  }
+  when(controller.uploadZipSrc("a", "xxx".getBytes("utf-8")))
+    .thenAnswer(new Answer[RequestContext => Unit] {
+    def answer(invocation: InvocationOnMock) =
+      _.complete("Answer from mock!")
+  })
 
-  test("should render whole.gexf") {
-    Get("/data/projects/0/head/whole.gexf") ~> route ~> check {
-      entityAs[String] should be("whole.gexf for project 0")
-    }
-  }
+  val formData = MultipartFormData(Map(
+    "projectName" -> BodyPart(HttpBody("a")),
+    "Filedata" -> BodyPart(HttpBody(`application/zip`, "xxx"))
+  ))
 
-  test("should respond to calls post") {
-    Post("/data/projects/0/head/calls") ~> route ~> check {
-      entityAs[String] should be("uploaded calls.csv for 0")
-    }
-  }
-
-  test("should respond to zip post") {
-    Post("/data/projects") ~> route ~> check {
-      entityAs[String] should be("temp")
+  test("should invoke controller#uploadZipSrc") {
+    Post("/data/projects/", Some(formData)) ~> route ~> check {
+      entityAs[String] should equal("Answer from mock!")
     }
   }
 }

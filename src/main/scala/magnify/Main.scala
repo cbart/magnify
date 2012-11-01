@@ -1,6 +1,9 @@
 package magnify
 
 import magnify.actor.Actors
+import magnify.features.Features
+import magnify.services.Services
+import magnify.web.api.controllers.Controllers
 import magnify.web.api.routes.Routes
 import magnify.web.api.view.Views
 import magnify.web.http.Http
@@ -8,8 +11,6 @@ import magnify.web.http.Http
 import akka.actor.ActorRef
 import com.google.inject.{Guice, Key}
 import com.google.inject.name.Names
-import magnify.features.Features
-import magnify.services.Services
 import spray.can.server.HttpServer
 
 object Main extends App {
@@ -17,6 +18,7 @@ object Main extends App {
       new Actors(),
       new Features(),
       new Services(),
+      new Controllers(),
       new Routes(),
       new Views(),
       new Http()

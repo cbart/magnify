@@ -11,8 +11,8 @@ import org.scalatest.matchers.ShouldMatchers
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
-final class JavaParseTest extends FunSuite with ShouldMatchers {
-  val parser = new JavaParse()
+final class ClassAndImportsParserTest extends FunSuite with ShouldMatchers {
+  val parser = new ClassAndImportsParser()
 
   test("should parse simple class with no imports yielding fully qualified name") {
     val source =

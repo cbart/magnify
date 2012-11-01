@@ -1,8 +1,10 @@
 package magnify.web.api.routes
 
 import akka.actor.ActorSystem
-import spray.routing._
-import spray.http._
+import spray.http.MediaType
+import spray.http.MediaTypes._
+import spray.routing.Directives._
+import spray.routing.Route
 
 /**
  * Web Browser frontend routes.
@@ -10,15 +12,15 @@ import spray.http._
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 private[routes] final class Frontend (implicit system: ActorSystem) extends (() => Route) {
-  import Directives._
-  import MediaTypes._
 
   override def apply: Route =
-    (pathPrefix("frontend") & get) {
-      static("html") ~
-      static("js", mediaType = `application/javascript`) ~
-      static("css", mediaType = `text/css`) ~
-      static("img", mediaType = `image/png`)
+    get {
+      pathPrefix("frontend") {
+        static("html") ~
+        static("js", mediaType = `application/javascript`) ~
+        static("css", mediaType = `text/css`) ~
+        static("img", mediaType = `image/png`)
+      }
     }
 
   /**

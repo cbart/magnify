@@ -8,13 +8,14 @@ import com.google.inject.name.Names
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import spray.routing.Route
+import magnify.web.api.controllers.DataController
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
 final class RoutesTest extends ActorsTestBase with GuiceTestModules {
-  val injector = Guice.createInjector(new ActorsModule(), new Routes)
+  val injector = Guice.createInjector(new ActorsModule(), new Routes, mockitoModule[DataController])
 
   test("should inject http service actor") {
     injector.getInstance(Key.get(classOf[ActorRef], Names.named("http-service")))

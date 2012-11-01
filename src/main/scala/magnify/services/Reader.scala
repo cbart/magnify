@@ -1,10 +1,11 @@
 package magnify.services
 
 import java.io.InputStream
+import scalaz.Monoid
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-trait SourceReader {
-  def flatMap[A](f: InputStream => Seq[A]): Seq[A]
+trait Reader {
+  def read[A: Monoid](parse: InputStream => A): A
 }

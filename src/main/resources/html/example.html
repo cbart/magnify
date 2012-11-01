@@ -20,9 +20,9 @@
       minEdgeSize: 1,
       maxEdgeSize: 1
     }).mouseProperties({
-      maxRatio: 32
+      maxRatio: 32,
+      minRatio: 0.2
     });
-
     // Parse a GEXF encoded file to fill the graph
     // (requires "sigma.parseGexf.js" to be included)
     sigInst.parseGexf('/data/projects/0/head/whole.gexf');
@@ -34,6 +34,9 @@
     upclick({
       element: uploader,
       action: '/data/projects?',
+      action_params: {
+        'projectName': '0'
+      },
       oncomplete: function (responseData) {
         console.log(responseData);
       }
