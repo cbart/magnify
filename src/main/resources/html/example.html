@@ -25,7 +25,11 @@
     });
     // Parse a GEXF encoded file to fill the graph
     // (requires "sigma.parseGexf.js" to be included)
+    try {
     sigInst.parseGexf('/data/projects/0/head/whole.gexf');
+    } catch (err) {
+      console.log(err)
+    }
 
     // Draw the graph :
     sigInst.draw();

@@ -24,7 +24,6 @@ final class ZipReader (input: Array[Byte], fileSelector: String => Boolean) exte
         if (fileSelector(entry.getName)) {
           accumulator = join(accumulator, zip)
         }
-        zip.closeEntry()
         entry = zip.getNextEntry
       }
       accumulator

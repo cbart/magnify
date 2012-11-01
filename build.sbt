@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   "io.spray" %% "spray-json" % "1.2.2",
   "io.spray" % "spray-testkit" % "1.0-M4.2" % "test",
   "com.google.code.javaparser" % "javaparser" % "1.0.8",
+  "com.google.guava" % "guava" % "13.0.1",
   "com.google.inject" % "guice" % "3.0",
   "com.google.inject.extensions" % "guice-multibindings" % "3.0",
   "com.typesafe.akka" % "akka-actor" % "2.0.3",

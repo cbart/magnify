@@ -15,7 +15,7 @@ import scala.collection.JavaConversions._
  */
 private[services] final class ClassAndImportsParser extends JavaParser {
   override def parse(input: InputStream): Seq[Ast] = {
-    val unit = JapaParser.parse(input)
+    val unit = JapaParser.parse(new NonClosingInputStream(input))
     val imports = getImports(unit)
     val prefix = packagePrefix(unit)
     for {
