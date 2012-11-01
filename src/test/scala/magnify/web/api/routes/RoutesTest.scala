@@ -15,7 +15,7 @@ import magnify.web.api.controllers.DataController
  */
 @RunWith(classOf[JUnitRunner])
 final class RoutesTest extends ActorsTestBase with GuiceTestModules {
-  val injector = Guice.createInjector(new ActorsModule(), new Routes, mockitoModule[DataController])
+  val injector = Guice.createInjector(new Routes, systemModule, mockitoModule[DataController])
 
   test("should inject http service actor") {
     injector.getInstance(Key.get(classOf[ActorRef], Names.named("http-service")))

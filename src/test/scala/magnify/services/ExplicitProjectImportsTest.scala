@@ -21,4 +21,10 @@ final class ExplicitProjectImportsTest extends FunSuite with ShouldMatchers {
     resolutions should equal(Map("test.Local1" -> Seq("test.Local2"),
       "test.Local2" -> Seq("test.Local1")))
   }
+
+  test("should note classes even if they don't import anything") {
+    val classes = Ast(Seq(), "test.Local") :: Nil
+    val resolutions = imports.resolve(classes)
+    resolutions should equal(Map("test.Local" -> Seq()))
+  }
 }

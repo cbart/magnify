@@ -7,9 +7,9 @@ import java.lang.reflect.Constructor
  */
 package object guice {
   /**
-   * Returns single constructor of `A`.
+   * Returns single constructor of `ActorRefModule`.
    *
-   * @throws MatchError if `A` doesn't have only one constructor.
+   * @throws MatchError if `ActorRefModule` doesn't have only one constructor.
    */
   def constructor[A](implicit manifest: Manifest[A]): Constructor[A] = {
     val Array(onlyConstructor) = manifest.erasure.getConstructors

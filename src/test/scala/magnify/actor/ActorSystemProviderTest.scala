@@ -12,7 +12,7 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 final class ActorSystemProviderTest extends FunSuite with ShouldMatchers {
   test("actor system provided should shut down when hooks are executed") {
-    val provider = new ActorSystemProvider({body => body})
+    val provider = new ActorSystemProvider({hook => hook})
     val system = provider()
     system.awaitTermination(2.seconds)
     system should be('terminated)

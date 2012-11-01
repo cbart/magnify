@@ -15,17 +15,16 @@ import org.scalatest.junit.JUnitRunner
 final class HttpTest extends ActorsTestBase with GuiceTestModules {
   test("should fail to create injector without root service") {
     intercept[CreationException] {
-      Guice.createInjector(new Http(), new ActorsModule())
+      Guice.createInjector(new Http(), systemModule)
     }
   }
 
   test("should succeed to create injector with actor system and root service provided") {
-    Guice.createInjector(new Http(), new ActorsModule(), new MockActor("http-service"))
+    Guice.createInjector(new Http(), systemModule, mockActorModule("http-service"))
   }
 
   test("should expose http server actor") {
-    val injector = Guice.createInjector(new Http(), new ActorsModule(),
-      new MockActor("http-service"))
+    val injector = Guice.createInjector(new Http(), systemModule, mockActorModule("http-service"))
     injector.getInstance(Key.get(classOf[ActorRef], Names.named("http-server")))
   }
 }
