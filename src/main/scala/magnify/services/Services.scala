@@ -1,6 +1,6 @@
 package magnify.services
 
-import magnify.common.guice.constructor
+import magnify.common.reflect.constructor
 import magnify.features.{GraphRepository, Imports}
 import magnify.model.graph.Graph
 

@@ -1,6 +1,6 @@
 package magnify.web.api.controllers
 
-import magnify.common.guice.constructor
+import magnify.common.reflect.constructor
 import magnify.features.SourceUseCase
 import magnify.services.{JavaParser, Reader}
 

@@ -5,7 +5,7 @@ import java.lang.reflect.Constructor
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-package object guice {
+package object reflect {
   /**
    * Returns single constructor of `ActorRefModule`.
    *

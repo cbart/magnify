@@ -1,6 +1,6 @@
 package magnify.features
 
-import magnify.common.guice.constructor
+import magnify.common.reflect.constructor
 
 import com.google.inject.AbstractModule
 

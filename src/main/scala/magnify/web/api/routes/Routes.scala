@@ -1,6 +1,6 @@
 package magnify.web.api.routes
 
-import magnify.common.guice.constructor
+import magnify.common.reflect.constructor
 import magnify.web.api.controllers.DataController
 
 import akka.actor._
