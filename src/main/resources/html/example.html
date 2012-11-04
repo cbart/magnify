@@ -4,77 +4,16 @@
 <title>Graph</title>
 <script src="/frontend/js/sigma.min.js"></script>
 <script src="/frontend/js/sigma.parseGexf.js"></script>
+<script src="/frontend/js/sigma.forceatlas2.js"></script>
 <script src="/frontend/js/upclick.min.js"></script>
-<script>
-  function init() {
-    var sigInst = sigma.init(document.getElementById('example-graph')).drawingProperties({
-      defaultLabelColor: '#fff',
-      defaultLabelSize: 14,
-      defaultLabelBGColor: '#fff',
-      defaultLabelHoverColor: '#000',
-      labelThreshold: 6,
-      defaultEdgeType: 'curve'
-    }).graphProperties({
-      minNodeSize: 0.5,
-      maxNodeSize: 5,
-      minEdgeSize: 1,
-      maxEdgeSize: 1
-    }).mouseProperties({
-      maxRatio: 32,
-      minRatio: 0.2
-    });
-    // Parse a GEXF encoded file to fill the graph
-    // (requires "sigma.parseGexf.js" to be included)
-    try {
-    sigInst.parseGexf('/data/projects/0/head/whole.gexf');
-    } catch (err) {
-      console.log(err)
-    }
-
-    // Draw the graph :
-    sigInst.draw();
-
-    var uploader = document.getElementById('uploader');
-    upclick({
-      element: uploader,
-      action: '/data/projects?',
-      action_params: {
-        'projectName': '0'
-      },
-      oncomplete: function (responseData) {
-        console.log(responseData);
-      }
-    });
-  }
-
-  if (document.addEventListener) {
-    document.addEventListener("DOMContentLoaded", init, false);
-  } else {
-    window.onload = init;
-  }
-</script>
-<style>
-  .sigma-parent {
-    position: relative;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    background: #222;
-    height: 500px;
-  }
-  .sigma-expand {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-  }
-</style>
+<script src="/frontend/js/display.sigma.js"></script>
+<link rel="stylesheet" href="/frontend/css/style.css">
 </head>
 <body>
-<input type="button" id="uploader" value="Add new project"/>
-<div class="sigma-parent">
-  <div class="sigma-expand" id="example-graph"></div>
-</div>
+<input type="button" id="upload-button" value="Upload zip source"/>
+<input type="button" id="toggle-layout" value="Stop layout"/>
+<section id="sigma-parent">
+    <div id="sigma-expand"></div>
+</section>
 </body>
 </html>
