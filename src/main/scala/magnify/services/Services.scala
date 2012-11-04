@@ -1,12 +1,11 @@
 package magnify.services
 
 import magnify.common.guice.constructor
+import magnify.features.{GraphRepository, Imports}
 import magnify.model.graph.Graph
 
 import akka.actor.ActorSystem
-import com.google.inject.{AbstractModule, Provides}
-
-import magnify.features.{GraphRepository, Imports}
+import com.google.inject.{Singleton, AbstractModule, Provides}
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -23,6 +22,7 @@ final class Services extends AbstractModule {
     new ZipReader(_, _)
 
   @Provides
+  @Singleton
   def repository: GraphRepository =
     InMemoryRepository(Map.empty[String, Graph])
 }

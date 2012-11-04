@@ -12,5 +12,6 @@ final class Features extends AbstractModule {
     requireBinding(classOf[Imports])
     requireBinding(classOf[GraphRepository])
     bind(classOf[SourceUseCase]).toConstructor(constructor[AddSources])
+    bind(classOf[GraphUseCase]).toConstructor(constructor[GetGraph])
   }
 }

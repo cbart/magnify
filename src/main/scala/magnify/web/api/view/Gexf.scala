@@ -3,12 +3,12 @@ package magnify.web.api.view
 import magnify.model.graph.Graph
 
 /**
- * [[com.tinkerpop.blueprints.Graph]] pimp that adds GEXF serialization.
+ * `Graph` pimp that adds GEXF serialization.
  */
 class Gexf (graph: Graph) {
   def toXml =
     <gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
-      <meta lastmodifieddate="2009-03-20">
+      <meta>
         <creator>Magnify</creator>
         <description>Graph</description>
       </meta>

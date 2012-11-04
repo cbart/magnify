@@ -15,9 +15,14 @@ private[routes] final class Data (system: ActorSystem, controller: DataControlle
     extends (() => Route) {
 
   override def apply: Route = {
-    (post & path("data" / "projects")) {
-      formFields(('projectName.as[String], 'Filedata.as[Array[Byte]])) {
-        controller.uploadZipSrc _
+    pathPrefix("data" / "projects") {
+      (post & path(PathEnd)) {
+        formFields(('projectName.as[String], 'Filedata.as[Array[Byte]])) {
+          controller.uploadZipSrc _
+        }
+      } ~
+      (get & path(PathElement / "head" / "whole.gexf")) {
+        controller.showGraph _
       }
     }
   }

@@ -1,10 +1,10 @@
 package magnify.features
 
-import magnify.model.java.Ast
+import magnify.services.Reader
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 trait SourceUseCase {
-  def add(name: String, sources: Seq[Ast])
+  def add(name: String, sources: Reader)
 }
