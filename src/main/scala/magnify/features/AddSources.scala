@@ -8,7 +8,7 @@ import magnify.model.java.Ast
  */
 private[features] final class AddSources (repository: GraphRepository, imports: Imports)
     extends SourceUseCase {
-  def add(name: String, sources: Seq[Ast]) {
+  override def add(name: String, sources: Seq[Ast]) {
     val importMapping = imports.resolve(sources)
     repository.add(name, Graph(importMapping))
   }
