@@ -1,3 +1,6 @@
+import de.johoop.jacoco4sbt._
+import JacocoPlugin._
+
 organization := "magnify"
 
 name := "magnify"
@@ -10,7 +13,10 @@ resolvers ++= Seq(
   "Typesafe releases" at "http://repo.typesafe.com/typesafe/releases/",
   "Spray repo" at "http://repo.spray.cc/",
   "OSS Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/",
-  "OSS Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/")
+  "OSS Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  "Gephi Releases" at "http://nexus.gephi.org/nexus/content/repositories/snapshots/",
+  "Gephi Snapshots" at "http://nexus.gephi.org/nexus/content/repositories/snapshots/",
+  "Gephi Thirdparty" at "http://nexus.gephi.org/nexus/content/repositories/thirdparty/")
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-Ydependent-method-types")
 
@@ -27,9 +33,12 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" % "akka-actor" % "2.0.3",
   "com.typesafe.akka" % "akka-testkit" % "2.0.3" % "test",
   "com.tinkerpop.blueprints" % "blueprints-core" % "2.1.0",
+  "org.gephi" % "gephi-toolkit" % "0.8.2-SNAPSHOT",
   "junit" % "junit" % "4.10" % "test",
   "org.scalatest" %% "scalatest" % "2.0.M4" % "test",
   "org.scalaz" %% "scalaz-core" % "6.0.4",
   "org.mockito" % "mockito-all" % "1.9.0" % "test")
 
 assemblySettings
+
+seq(jacoco.settings : _*)
