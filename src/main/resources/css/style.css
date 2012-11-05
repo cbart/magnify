@@ -1,12 +1,12 @@
 body {
-  background: #222;
+  background: #a5bfdd;
 }
 #sigma-parent {
   position: relative;
   border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
-  background: #222;
+  background: #f4f3f0;
   height: 500px;
 }
 #sigma-expand {

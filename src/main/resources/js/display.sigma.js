@@ -26,7 +26,13 @@
     }
 
     // Draw the graph :
-    sigInst.iterNodes(function (node) { node.color = "#fff"; });
+    var nodeColor = "#da6161";
+    var edgeColor = "#fb9139";
+    sigInst.iterNodes(function (node) { node.color = nodeColor; });
+    sigInst.iterEdges(function (edge) {
+      edge.color = edgeColor;
+      edge.displaySize = 2;
+    });
     sigInst.draw();
     sigInst.startForceAtlas2();
 
