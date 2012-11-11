@@ -8,6 +8,8 @@ import magnify.features.Parser
 import magnify.model.Ast
 import scala.annotation.tailrec
 import scala.collection.JavaConversions._
+import scala.tools.nsc.util.CommandLineParser.ParseException
+import play.api.Logger
 
 
 /**
@@ -16,14 +18,28 @@ import scala.collection.JavaConversions._
 private[services] final class ClassAndImportsParser extends Parser {
   JavaParser.setCacheParser(false)  // TODO: move this to dependency injection.
 
-  override def apply(input: InputStream): Seq[Ast] = {
-    val unit = JavaParser.parse(new NonClosingInputStream(input))
-    val imports = getImports(unit)
-    val prefix = packagePrefix(unit)
-    for {
-      className <- getClassNames(unit)
-    } yield Ast(imports, (prefix :+ className).mkString("."))
-  }
+  val logger = Logger(classOf[ClassAndImportsParser].getSimpleName)
+
+  override def apply(input: InputStream): Seq[Ast] =
+    parse(input) match {
+      case Some(unit) =>
+        val imports = getImports(unit)
+        val prefix = packagePrefix(unit)
+        for {
+          className <- getClassNames(unit)
+        } yield Ast(imports, (prefix :+ className).mkString("."))
+      case None =>
+        Seq()
+    }
+
+  private def parse(input: InputStream): Option[CompilationUnit] =
+    try {
+      Some(JavaParser.parse(new NonClosingInputStream(input)))
+    } catch {
+      case e: ParseException =>
+        logger.warn("Could not parse Java file.", e)
+        None
+    }
 
   private def getImports(unit: CompilationUnit): Seq[String] =
     for {

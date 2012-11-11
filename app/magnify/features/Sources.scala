@@ -1,6 +1,6 @@
 package magnify.features
 
-import java.util.zip.ZipFile
+import com.tinkerpop.blueprints.Graph
 import magnify.model.Archive
 
 /**
@@ -8,4 +8,8 @@ import magnify.model.Archive
  */
 trait Sources {
   def add(name: String, file: Archive)
+
+  def list: Seq[String]
+
+  def get(name: String): Option[Graph]
 }

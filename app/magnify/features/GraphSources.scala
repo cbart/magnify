@@ -63,4 +63,10 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
         .has("name", name)
         .toList
         .asInstanceOf[java.util.List[Vertex]]
+
+  override def list: Seq[String] =
+    graphs.keys.toSeq
+
+  override def get(name: String): Option[Graph] =
+    graphs.get(name)
 }

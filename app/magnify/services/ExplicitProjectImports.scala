@@ -4,7 +4,7 @@ import magnify.features.Imports
 import magnify.model.Ast
 
 
-final class ExplicitProjectImports extends Imports {
+private[services] final class ExplicitProjectImports extends Imports {
   /**
    * Resolves only explicit imports as:
    *

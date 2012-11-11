@@ -1,0 +1,22 @@
+@(name: String, graph: com.tinkerpop.blueprints.Graph)
+
+@import com.tinkerpop.blueprints.Direction._
+
+<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+  <meta>
+    <creator>Magnify</creator>
+    <description>@name</description>
+  </meta>
+  <graph mode="static" defaultedgetype="directed">
+    <nodes>
+      @for(node <- graph.getVertices) {
+        <node id="@node.toString"/>
+      }
+    </nodes>
+    <edges>
+      @for(edge <- graph.getEdges; in = edge.getVertex(IN); out = edge.getVertex(OUT)) {
+        <edge id="@{in.toString}_@{out.toString}" source="@in" target="@out"/>
+      }
+    </edges>
+  </graph>
+</gexf>

@@ -12,15 +12,22 @@ import scalaz.Scalaz._
 object Project extends Project(inject[Sources])
 
 sealed class Project (sources: Sources) extends Controller {
-  def list = Action { implicit request =>
-    Ok(views.html.list())
-  }
 
   def newProject = Action { implicit request =>
     Ok(views.html.newProject())
   }
 
-  private val allowedFormats = Set("application/zip", "application/x-java-archive")
+  def list = Action { implicit request =>
+    Ok(views.html.list(sources.list))
+  }
+
+  def show[A](name: String) = Action { implicit request =>
+    sources.get(name) match {
+      case Some(graph) => Ok(views.xml.gexf(name, graph))
+      case None => Redirect(routes.Project.list())
+          .flashing("warning" -> "Project \"%s\" was not found.".format(name))
+    }
+  }
 
   def upload = Action(parse.multipartFormData) { implicit request =>
     val name = request.body.dataParts.get("project-name").flatMap {
@@ -43,4 +50,6 @@ sealed class Project (sources: Sources) extends Controller {
           .flashing("error" -> "Something went wrong. Project wasn't added.")
     }
   }
+
+  private val allowedFormats = Set("application/zip", "application/x-java-archive")
 }
