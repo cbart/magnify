@@ -1,11 +1,10 @@
 package magnify.services
 
-import org.scalatest.FunSuite
+import magnify.model.Ast
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import magnify.model.java.Ast
 import org.scalatest.matchers.ShouldMatchers
-import magnify.model.graph.Graph
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)

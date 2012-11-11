@@ -1,13 +1,13 @@
 package magnify.actor
 
-import magnify.testing.ActorsSuite
-
 import akka.actor.ActorSystem
 import com.google.inject._
+import magnify.testing.ActorsSuite
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
+
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)

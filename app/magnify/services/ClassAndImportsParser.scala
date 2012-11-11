@@ -1,21 +1,23 @@
 package magnify.services
 
-import magnify.model.java.Ast
-
+import japa.parser.JavaParser
 import japa.parser.ast.CompilationUnit
-import japa.parser.{JavaParser => JapaParser}
 import japa.parser.ast.expr.{QualifiedNameExpr, NameExpr}
-
 import java.io.InputStream
+import magnify.features.Parser
+import magnify.model.Ast
 import scala.annotation.tailrec
 import scala.collection.JavaConversions._
+
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
-private[services] final class ClassAndImportsParser extends JavaParser {
-  override def parse(input: InputStream): Seq[Ast] = {
-    val unit = JapaParser.parse(new NonClosingInputStream(input))
+private[services] final class ClassAndImportsParser extends Parser {
+  JavaParser.setCacheParser(false)  // TODO: move this to dependency injection.
+
+  override def apply(input: InputStream): Seq[Ast] = {
+    val unit = JavaParser.parse(new NonClosingInputStream(input))
     val imports = getImports(unit)
     val prefix = packagePrefix(unit)
     for {

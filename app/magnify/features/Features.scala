@@ -10,8 +10,7 @@ import com.google.inject.AbstractModule
 final class Features extends AbstractModule {
   def configure() {
     requireBinding(classOf[Imports])
-    requireBinding(classOf[GraphRepository])
-    bind(classOf[SourceUseCase]).toConstructor(constructor[AddSources])
-    bind(classOf[GraphUseCase]).toConstructor(constructor[GetGraph])
+    requireBinding(classOf[Parser])
+    bind(classOf[Sources]).toConstructor(constructor[GraphSources])
   }
 }

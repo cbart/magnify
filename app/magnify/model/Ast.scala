@@ -1,4 +1,4 @@
-package magnify.model.java
+package magnify.model
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)

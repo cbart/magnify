@@ -1,6 +1,7 @@
 body {
   background: #a5bfdd;
 }
+
 #sigma-parent {
   position: relative;
   border-radius: 4px;
@@ -9,6 +10,7 @@ body {
   background: #f4f3f0;
   height: 500px;
 }
+
 #sigma-expand {
   position: absolute;
   width: 100%;
