@@ -1,4 +1,5 @@
 @(title: String, head: Html = Html(""))(content: Html)(implicit flash: Flash)
+
 <!doctype html>
 <html>
   <head>
@@ -8,6 +9,8 @@
     @head
   </head>
   <body>
+    @nav()
+    @flashSection()
     @content
   </body>
 </html>

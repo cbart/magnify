@@ -4,7 +4,8 @@
 
 # Home page
 GET     /project/list.html          controllers.Project.list
-GET     /project/:name/graph.gexf   controllers.Project.show(name: String)
+GET     /project/:name/graph.html   controllers.Project.show(name: String)
+GET     /project/:name/graph.json   controllers.Project.showJson(name: String)
 GET     /project/newProject.html    controllers.Project.newProject
 POST    /project/upload.html        controllers.Project.upload
 

@@ -1,0 +1,15 @@
+@()(implicit flash: Flash)
+
+@displayFlash(key: String) = {
+  @for(message <- flash.get(key)) {
+    <p class="@key">@message</p>
+  }
+}
+
+@if(!flash.isEmpty) {
+  <section class="flash">
+    @for(key <- Seq("error", "warning", "success")) {
+      @displayFlash(key)
+    }
+  </section>
+}

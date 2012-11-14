@@ -1,7 +1,7 @@
 package magnify.features
 
-import com.tinkerpop.blueprints.Graph
 import magnify.model.Archive
+import magnify.model.graph.Graph
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)

@@ -1,20 +1,13 @@
 body {
-  background: #a5bfdd;
+  background: #fdfdfd;
 }
 
-#sigma-parent {
-  position: relative;
-  border-radius: 4px;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
-  background: #f4f3f0;
-  height: 500px;
+circle.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
 }
 
-#sigma-expand {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
+line.link {
+  stroke: #999;
+  stroke-opacity: .6;
 }

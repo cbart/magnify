@@ -1,27 +1,14 @@
 @(projects: Seq[String])(implicit flash: Flash)
 
-@displayFlash(key: String) = {
-  @for(message <- flash.get(key)) {
-    <p class="@key">@message</p>
-  }
-}
-
 @main("Magnify") {
   <header>
-    <h1>Project list</h1>
+    <h1>project list</h1>
   </header>
-  @if(!flash.isEmpty) {
-    <section class="flash">
-      @for(key <- Seq("error", "warning", "success")) {
-        @displayFlash(key)
-      }
-    </section>
-  }
   <section>
     <ul>
       @for(name <- projects) {
         <li>
-          @name
+          <a href="@routes.Project.show(name)">@name</a>
         </li>
       }
     </ul>

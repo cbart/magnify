@@ -3,9 +3,14 @@
 @import helper._
 
 @main("Create new project") {
-  @form(action = routes.Project.upload, 'enctype -> "multipart/form-data") {
-    <input type="text" name="project-name"/>
-    <input type="file" name="project-sources"/>
-    <input type="submit" value="Create new project"/>
-  }
+  <header>
+    <h1>create new project</h1>
+  </header>
+  <section>
+    @form(action = routes.Project.upload, 'enctype -> "multipart/form-data") {
+      <input type="text" name="project-name"/>
+      <input type="file" name="project-sources"/>
+      <input type="submit" value="Create new project"/>
+    }
+  </section>
 }

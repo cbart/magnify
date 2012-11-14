@@ -1,0 +1,14 @@
+@(name: String)(implicit flash: Flash)
+
+@head = {
+  <script src="http://d3js.org/d3.v2.js"></script>
+  <script src="/assets/javascripts/display.js"></script>
+}
+
+@main("Magnify", head) {
+  <header>
+    <h1>@name</h1>
+  </header>
+  <section id="chart">
+  </section>
+}
