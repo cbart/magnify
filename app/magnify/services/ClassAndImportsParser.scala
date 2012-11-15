@@ -8,7 +8,6 @@ import magnify.features.Parser
 import magnify.model.Ast
 import scala.annotation.tailrec
 import scala.collection.JavaConversions._
-import scala.tools.nsc.util.CommandLineParser.ParseException
 import play.api.Logger
 
 
@@ -36,7 +35,7 @@ private[services] final class ClassAndImportsParser extends Parser {
     try {
       Some(JavaParser.parse(new NonClosingInputStream(input)))
     } catch {
-      case e: ParseException =>
+      case e: Exception =>
         logger.warn("Could not parse Java file.", e)
         None
     }
