@@ -1,51 +1,88 @@
-console.log("X")
 $ ->
-  console.log("Y")
-  width = 960
-  height = 1000
+  makeSvg = (jsonAddress) ->
+    width = 960
+    height = 1000
+    color = (kind) ->
+      switch kind
+        when "class" then "#d3d7cf"
+        when "package" then "#2e3436"
 
-  force = d3.layout.force()
-    .charge(-120)
-    .linkDistance(30)
-    .size([width, height])
+    strength = (link) ->
+      switch link.kind
+        when "imports" then 0.01
+        when "package-imports" then 0.03
+        when "in-package" then 1.0
 
-  svg = d3
-    .select("#chart")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
+    linkColor = (link) ->
+      switch link.kind
+        when "in-package" then "#cc0000"
+        when "imports" then "#d3d7df"
+        when "package-imports" then "#babdb6"
 
-  d3.json "graph.json", (json) ->
-    force
-      .nodes(json.nodes)
-      .links(json.edges)
-      .start()
+    linkWidth = (link) ->
+      switch link.kind
+        when "in-package" then 1.5
+        when "package-imports" then 1
+        when "imports" then 1
 
-    link = svg.selectAll("line.link")
-      .data(json.edges)
-      .enter()
-      .append("line")
-      .attr("class", "link")
-      .style("stroke-width", (d) -> Math.sqrt(d.value))
+    force = d3.layout.force()
+      .charge(-120)
+      .linkDistance(30)
+      .linkStrength(strength)
+      .size([width, height])
 
-    node = svg.selectAll("circle.node")
-      .data(json.nodes)
-      .enter()
-      .append("circle")
-      .attr("class", "node")
-      .attr("r", 5)
-      .call(force.drag)
+    svg = d3
+      .select("#chart")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
 
-    node
-      .append("title")
-      .text((d) -> d.name)
+    d3.json jsonAddress, (json) ->
+      force
+        .nodes(json.nodes)
+        .links(json.edges)
+        .start()
 
-    force.on "tick", ->
-      link
-        .attr("x1", (d) -> d.source.x)
-        .attr("y1", (d) -> d.source.y)
-        .attr("x2", (d) -> d.target.x)
-        .attr("y2", (d) -> d.target.y)
+      link = svg.selectAll("line.link")
+        .data(json.edges)
+        .enter()
+        .append("line")
+        .attr("class", "link")
+        .style("stroke-width", linkWidth)
+        .style("stroke", linkColor)
+
+      node = svg.selectAll("circle.node")
+        .data(json.nodes)
+        .enter()
+        .append("circle")
+        .attr("class", "node")
+        .attr("r", 7)
+        .style("fill", (d) -> color(d.kind))
+        .call(force.drag)
+
       node
-        .attr("cx", (d) -> d.x)
-        .attr("cy", (d) -> d.y)
+        .append("title")
+        .text((d) -> d.name)
+
+      force.on "tick", ->
+        link
+          .attr("x1", (d) -> d.source.x)
+          .attr("y1", (d) -> d.source.y)
+          .attr("x2", (d) -> d.target.x)
+          .attr("y2", (d) -> d.target.y)
+        node
+          .attr("cx", (d) -> d.x)
+          .attr("cy", (d) -> d.y)
+  clearSvg = ->
+    $("#chart").empty()
+  $(".whole-button").on("click", (event) ->
+    clearSvg()
+    makeSvg("whole.json"))
+  $(".packages-button").on("click", (event) ->
+    clearSvg()
+    makeSvg("packages.json"))
+  $(".package-imports-button").on("click", (event) ->
+    clearSvg()
+    makeSvg("pkgImports.json"))
+  makeSvg("packages.json")
+

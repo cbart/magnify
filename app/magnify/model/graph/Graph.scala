@@ -18,17 +18,11 @@ object Graph {
 }
 
 final class Graph (blueprintsGraph: BlueprintsGraph) {
-  def vertices: GremlinPipeline[java.lang.Iterable[Vertex], java.lang.Iterable[Vertex]] = {
-    val pipeline = new GremlinPipeline[java.lang.Iterable[Vertex], java.lang.Iterable[Vertex]]()
-    pipeline.start(blueprintsGraph.getVertices)
-    pipeline
-  }
+  def vertices: GremlinPipeline[Vertex, Vertex] =
+    new GremlinPipeline(blueprintsGraph.getVertices, true)
 
-  def edges: GremlinPipeline[java.lang.Iterable[Edge], java.lang.Iterable[Edge]] = {
-    val pipeline = new GremlinPipeline[java.lang.Iterable[Edge], java.lang.Iterable[Edge]]()
-    pipeline.start(blueprintsGraph.getEdges)
-    pipeline
-  }
+  def edges: GremlinPipeline[Edge, Edge] =
+    new GremlinPipeline(blueprintsGraph.getEdges, true)
 
   def addVertex: Vertex =
     blueprintsGraph.addVertex(null)
