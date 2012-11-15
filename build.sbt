@@ -24,8 +24,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" % "akka-actor" % "2.0.3",
   "com.tinkerpop.blueprints" % "blueprints" % "2.1.0",
   "com.tinkerpop.gremlin" % "gremlin-java" % "2.1.0",
-  //"org.gephi" % "gephi-toolkit" % "0.8.2-SNAPSHOT",
-  "org.scala-sbt" % "sbt" % "0.12.1",
   "org.scalaz" %% "scalaz-core" % "6.0.4")
 
 // Test
