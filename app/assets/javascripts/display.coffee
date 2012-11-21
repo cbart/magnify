@@ -1,7 +1,7 @@
 $ ->
   makeSvg = (jsonAddress) ->
     width = 960
-    height = 1000
+    height = 500
     color = (kind) ->
       switch kind
         when "class" then "#d3d7cf"
