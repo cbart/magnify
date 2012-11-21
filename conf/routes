@@ -3,7 +3,6 @@
 # ~~~~
 
 # Home page
-GET     /project/list.html                              controllers.Project.list
 GET     /project/:name/graph.html                       controllers.Project.show(name: String)
 GET     /project/:name/whole.json                       controllers.Project.showWholeJson(name: String)
 GET     /project/:name/packages.json                    controllers.Project.showPackagesJson(name: String)

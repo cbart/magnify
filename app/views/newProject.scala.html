@@ -1,16 +1,38 @@
-@()(implicit flash: Flash)
+@()(implicit flash: Flash, projects: Seq[String])
 
 @import helper._
 
-@main("Create new project") {
-  <header>
-    <h1>create new project</h1>
-  </header>
-  <section>
-    @form(action = routes.Project.upload, 'enctype -> "multipart/form-data") {
-      <input type="text" name="project-name"/>
-      <input type="file" name="project-sources"/>
-      <input type="submit" value="Create new project"/>
-    }
-  </section>
+@main("Add new project") {
+  @form(action = routes.Project.upload, 'enctype -> "multipart/form-data", 'class -> "form-horizontal") {
+    <div class="control-group">
+      <label class="control-label" for="project-name">Project name</label>
+      <div class="controls">
+        <input type="text" id="project-name" name="project-name" placeholder="junit-4.10">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="project-sources">Source archive</label>
+      <div class="controls">
+        <input name="project-sources" id="project-sources" type="file" style="display:none">
+        <div class="input-append">
+          <input id="project-sources-filename" placeholder="junit-4.10-src.jar" type="text">
+          <a class="btn" onclick="$('input[id=project-sources]').click();">Browse</a>
+        </div>
+        <script type="text/javascript">
+          $('input[id=project-sources]').change(function() {
+            var filename = $(this).val().split('\\').pop().split('/').pop();
+            $('#project-sources-filename').val(filename);
+          });
+        </script>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-primary">
+          <i class="icon-upload-alt"></i>
+          Create
+        </button>
+      </div>
+    </div>
+  }
 }

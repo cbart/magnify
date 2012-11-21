@@ -1,11 +1,12 @@
-@()
-<nav>
-  <ul>
+@()(implicit projects: Seq[String])
+
+<ul class="nav nav-tabs nav-stacked mag-sidenav">
+  <li>
+    <a href="@routes.Project.newProject()">New project</a>
+  </li>
+  @for(projectName <- projects.sorted) {
     <li>
-      <a href="@routes.Project.list">projects</a>
+      <a href="@routes.Project.show(projectName)">@projectName</a>
     </li>
-    <li>
-      <a href="@routes.Project.newProject">new project</a>
-    </li>
-  </ul>
-</nav>
+  }
+</ul>

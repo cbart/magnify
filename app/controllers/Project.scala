@@ -27,19 +27,17 @@ sealed class Project (sources: Sources) extends Controller {
 
   val logger = Logger(classOf[Project].getSimpleName)
 
+  private implicit def projects: Seq[String] = sources.list
+
   def newProject = Action { implicit request =>
     Ok(views.html.newProject())
-  }
-
-  def list = Action { implicit request =>
-    Ok(views.html.list(sources.list))
   }
 
   def show[A](name: String) = Action { implicit request =>
     sources.get(name) match {
       case Some(graph) => Ok(views.html.show(name))
-      case None => Redirect(routes.Project.list())
-          .flashing("warning" -> "Project \"%s\" was not found.".format(name))
+      case None => Redirect(routes.Project.newProject())
+          .flashing("warning" -> "Project \"%s\" was not found. Why not create new one?".format(name))
     }
   }
 
@@ -121,13 +119,15 @@ sealed class Project (sources: Sources) extends Controller {
     val src = request.body.file("project-sources").filter { file =>
       file.contentType.map(allowedFormats).getOrElse(false)
     }
+    Logger.info(name.toString)
+    Logger.info(src.toString)
     (name |@| src) { (name: String, src: FilePart[TemporaryFile]) =>
       val TemporaryFile(file) = src.ref
       sources.add(name, new Zip(file))
       name
     } match {
       case Some(name) =>
-        Redirect(routes.Project.list())
+        Redirect(routes.Project.newProject())
           .flashing("success" -> "Project %s adding scheduled.".format(name))
       case None =>
         Redirect(routes.Project.newProject())

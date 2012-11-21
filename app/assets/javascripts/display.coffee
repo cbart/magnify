@@ -76,12 +76,18 @@ $ ->
   clearSvg = ->
     $("#chart").empty()
   $(".whole-button").on("click", (event) ->
+    $(".nav-graph-detail-level").find("*").removeClass("active")
+    $(".nav-graph-whole-tab").addClass("active")
     clearSvg()
     makeSvg("whole.json"))
   $(".packages-button").on("click", (event) ->
+    $(".nav-graph-detail-level").find("*").removeClass("active")
+    $(".nav-graph-packages-tab").addClass("active")
     clearSvg()
     makeSvg("packages.json"))
   $(".package-imports-button").on("click", (event) ->
+    $(".nav-graph-detail-level").find("*").removeClass("active")
+    $(".nav-graph-package-imports-tab").addClass("active")
     clearSvg()
     makeSvg("pkgImports.json"))
   makeSvg("packages.json")

@@ -1,16 +1,37 @@
-@(title: String, head: Html = Html(""))(content: Html)(implicit flash: Flash)
+@(title: String, head: Html = Html(""))(content: Html)(implicit flash: Flash, projects: Seq[String])
 
 <!doctype html>
 <html>
   <head>
     <title>@title</title>
     <link href="@routes.Assets.at("/stylesheets/bootstrap.min.css")" rel="stylesheet" media="screen">
+    <link href="@routes.Assets.at("/stylesheets/main.css")" rel="stylesheet" media="screen">
     <script src="@routes.Assets.at("/javascripts/jquery-1.8.3.min.js")"></script>
     @head
   </head>
   <body>
-    @nav()
-    @flashSection()
-    @content
+    <header class="jumbotron subhead" id="overview">
+      <div class="container">
+        <h1>Magnify <i class="icon-search"></i></h1>
+        <p class="lead">Ultimate tool that helps you deal with your codebase.</p>
+      </div>
+    </header>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span3">
+          @nav()
+        </div>
+        <div class="span9">
+          <section>
+            <div class="page-header">
+              <h1>@title</h1>
+            </div>
+            @flashSection()
+            @content
+          </section>
+        </div>
+      </div>
+    </div>
+    <script src="js/bootstrap.min.js"></script>
   </body>
 </html>
