@@ -3,13 +3,17 @@
 # ~~~~
 
 # Home page
-GET     /project/list.html              controllers.Project.list
-GET     /project/:name/graph.html       controllers.Project.show(name: String)
-GET     /project/:name/whole.json       controllers.Project.showWholeJson(name: String)
-GET     /project/:name/packages.json    controllers.Project.showPackagesJson(name: String)
-GET     /project/:name/pkgImports.json  controllers.Project.showPkgImportsJson(name: String)
-GET     /project/newProject.html        controllers.Project.newProject
-POST    /project/upload.html            controllers.Project.upload
+GET     /project/list.html                              controllers.Project.list
+GET     /project/:name/graph.html                       controllers.Project.show(name: String)
+GET     /project/:name/whole.json                       controllers.Project.showWholeJson(name: String)
+GET     /project/:name/packages.json                    controllers.Project.showPackagesJson(name: String)
+GET     /project/:name/pkgImports.json                  controllers.Project.showPkgImportsJson(name: String)
+GET     /project/newProject.html                        controllers.Project.newProject
+POST    /project/upload.html                            controllers.Project.upload
+
+# Twitter Bootstrap
+GET     /assets/img/glyphicons-halflings-white.png      controllers.Assets.at(path="/public", file="/images/bootstrap/glyphicons-halflings-white.png")
+GET     /assets/img/glyphicons-halflings.png            controllers.Assets.at(path="/public", file="/images/bootstrap/glyphicons-halflings.png")
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file                   controllers.Assets.at(path="/public", file)
+GET     /assets/*file                                   controllers.Assets.at(path = "/public", file)
