@@ -1,7 +1,9 @@
 $ ->
   makeSvg = (jsonAddress) ->
     width = 960
-    height = 500
+    height = 600
+    radius = 6
+
     color = (kind) ->
       switch kind
         when "class" then "#d3d7cf"
@@ -30,12 +32,26 @@ $ ->
       .linkDistance(30)
       .linkStrength(strength)
       .size([width, height])
+      .gravity(0.2)
 
     svg = d3
       .select("#chart")
-      .append("svg")
+      .append("svg:svg")
       .attr("width", width)
       .attr("height", height)
+      .attr("pointer-events", "all")
+      .append("svg:g")
+      .call(d3.behavior.zoom().on("zoom", ->
+        console.log("here", d3.event.translate, d3.event.scale);
+        svg.attr("transform", "translate(#{d3.event.translate}) scale(#{d3.event.scale})")
+      ))
+      .append("svg:g")
+
+    svg
+      .append("svg:rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "transparent")
 
     d3.json jsonAddress, (json) ->
       force
@@ -46,23 +62,36 @@ $ ->
       link = svg.selectAll("line.link")
         .data(json.edges)
         .enter()
-        .append("line")
+        .append("svg:line")
         .attr("class", "link")
         .style("stroke-width", linkWidth)
         .style("stroke", linkColor)
+
+
+      linkedByIndex = {}
+      json.edges.forEach((d) -> linkedByIndex[d.source.index + "," + d.target.index] = 1)
+
+      isConnected = (a, b) ->
+        linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index
 
       node = svg.selectAll("circle.node")
         .data(json.nodes)
         .enter()
         .append("circle")
         .attr("class", "node")
-        .attr("r", 7)
+        .attr("r", radius)
         .style("fill", (d) -> color(d.kind))
         .call(force.drag)
 
       node
         .append("title")
         .text((d) -> d.name)
+
+      svg
+        .style("opacity", 1e-6)
+        .transition()
+        .duration(1000)
+        .style("opacity", 1)
 
       force.on "tick", ->
         link
@@ -73,6 +102,7 @@ $ ->
         node
           .attr("cx", (d) -> d.x)
           .attr("cy", (d) -> d.y)
+
   clearSvg = ->
     $("#chart").empty()
   $(".whole-button").on("click", (event) ->

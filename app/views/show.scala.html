@@ -1,22 +1,22 @@
 @(name: String)(implicit flash: Flash, projects: Seq[String])
 
 @head = {
-  <script src="http://d3js.org/d3.v2.js"></script>
+  <script src="@routes.Assets.at("/javascripts/d3.v2.js")"></script>
   <script src="@routes.Assets.at("/javascripts/display.js")"></script>
 }
 
 @main(name, head) {
   <ul class="nav nav-tabs nav-graph-detail-level">
     <li class="active nav-graph-packages-tab">
-      <a href="#" class="packages-button">Only packages</a>
+      <a class="packages-button">Only packages</a>
     </li>
     <li class="nav-graph-package-imports-tab">
-      <a href="#" class="package-imports-button">Packages with imports</a>
+      <a class="package-imports-button">Packages with imports</a>
     </li>
     <li class="nav-graph-whole-tab">
-      <a href="#" class="whole-button">Whole graph</a>
+      <a class="whole-button">Whole graph</a>
     </li>
   </ul>
-  <section id="chart">
-  </section>
+  <div id="chart">
+  </div>
 }
