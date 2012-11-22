@@ -10,6 +10,8 @@ GET     /project/:name/pkgImports.json                  controllers.Project.show
 GET     /project/newProject.html                        controllers.Project.newProject
 POST    /project/upload.html                            controllers.Project.upload
 
+GET     /                                               controllers.Project.newProject
+
 # Twitter Bootstrap
 GET     /assets/img/glyphicons-halflings-white.png      controllers.Assets.at(path="/public", file="/images/bootstrap/glyphicons-halflings-white.png")
 GET     /assets/img/glyphicons-halflings.png            controllers.Assets.at(path="/public", file="/images/bootstrap/glyphicons-halflings.png")
