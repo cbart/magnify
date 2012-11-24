@@ -1,6 +1,6 @@
 package magnify.services
 
-import japa.parser.JavaParser
+import japa.parser.{TokenMgrError, JavaParser}
 import japa.parser.ast.CompilationUnit
 import japa.parser.ast.expr.{QualifiedNameExpr, NameExpr}
 import java.io.InputStream
@@ -37,6 +37,9 @@ private[services] final class ClassAndImportsParser extends Parser {
     } catch {
       case e: Exception =>
         logger.warn("Could not parse Java file.", e)
+        None
+      case e: TokenMgrError =>
+        logger.warn("Lexical error", e)
         None
     }
 

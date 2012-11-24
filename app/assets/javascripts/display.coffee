@@ -1,7 +1,7 @@
 $ ->
   makeSvg = (jsonAddress) ->
-    width = 960
-    height = 600
+    width = $("#chart").width()
+    height = 500
     radius = 6
 
     color = (kind) ->
