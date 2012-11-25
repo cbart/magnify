@@ -1,7 +1,7 @@
 package controllers
 
-import com.tinkerpop.blueprints._
 import com.tinkerpop.blueprints.Direction._
+import com.tinkerpop.blueprints._
 import com.tinkerpop.gremlin.pipes.filter.{LabelFilterPipe, PropertyFilterPipe}
 import com.tinkerpop.pipes.filter.FilterPipe.Filter
 import com.tinkerpop.pipes.filter.{FilterPipe, OrFilterPipe}
