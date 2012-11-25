@@ -16,6 +16,8 @@ project/plugins/project/
 /.classpath
 /.project
 /.cache
+/.target
+/.settings
 
 # IntelliJ IDEA
 /*.iml
