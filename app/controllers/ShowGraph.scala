@@ -11,9 +11,9 @@ import play.api.libs.json._
 import play.api.mvc._
 
 
-object Project extends Project(inject[Sources])
+object ShowGraph extends ShowGraph(inject[Sources])
 
-sealed class Project (protected override val sources: Sources) extends Controller with ProjectList {
+sealed class ShowGraph (protected override val sources: Sources) extends Controller with ProjectList {
 
   def show[A](name: String) = Action { implicit request =>
     sources.get(name) match {

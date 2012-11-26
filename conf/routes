@@ -3,10 +3,10 @@
 # ~~~~
 
 # Home page
-GET     /project/:name/graph.html                       controllers.Project.show(name: String)
-GET     /project/:name/whole.json                       controllers.Project.showWholeJson(name: String)
-GET     /project/:name/packages.json                    controllers.Project.showPackagesJson(name: String)
-GET     /project/:name/pkgImports.json                  controllers.Project.showPkgImportsJson(name: String)
+GET     /project/:name/graph.html                       controllers.ShowGraph.show(name: String)
+GET     /project/:name/whole.json                       controllers.ShowGraph.showWholeJson(name: String)
+GET     /project/:name/packages.json                    controllers.ShowGraph.showPackagesJson(name: String)
+GET     /project/:name/pkgImports.json                  controllers.ShowGraph.showPkgImportsJson(name: String)
 GET     /project/upload.html                            controllers.ZipSourcesUpload.form
 POST    /project/upload.html                            controllers.ZipSourcesUpload.upload
 
