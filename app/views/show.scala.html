@@ -1,4 +1,4 @@
-@(name: String)(implicit flash: Flash, projects: Seq[String])
+@(name: String)(implicit flash: Flash, projects: Projects)
 
 @head = {
   <script src="@routes.Assets.at("/javascripts/d3.v2.js")"></script>

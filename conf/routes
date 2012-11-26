@@ -7,10 +7,10 @@ GET     /project/:name/graph.html                       controllers.Project.show
 GET     /project/:name/whole.json                       controllers.Project.showWholeJson(name: String)
 GET     /project/:name/packages.json                    controllers.Project.showPackagesJson(name: String)
 GET     /project/:name/pkgImports.json                  controllers.Project.showPkgImportsJson(name: String)
-GET     /project/newProject.html                        controllers.Project.newProject
-POST    /project/upload.html                            controllers.Project.upload
+GET     /project/upload.html                            controllers.ZipSourcesUpload.form
+POST    /project/upload.html                            controllers.ZipSourcesUpload.upload
 
-GET     /                                               controllers.Project.newProject
+GET     /                                               controllers.ZipSourcesUpload.form
 
 # Twitter Bootstrap
 GET     /assets/img/glyphicons-halflings-white.png      controllers.Assets.at(path="/public", file="/images/bootstrap/glyphicons-halflings-white.png")

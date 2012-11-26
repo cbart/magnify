@@ -1,4 +1,4 @@
-@()(implicit flash: Flash, projects: Seq[String])
+@()(implicit flash: Flash, projects: Projects)
 
 @import helper._
 
@@ -7,11 +7,11 @@
     <h1>Add new project</h1>
   </div>
   @flashSection()
-  @form(action = routes.Project.upload, 'enctype -> "multipart/form-data", 'class -> "form-horizontal") {
+  @form(action = routes.ZipSourcesUpload.upload, 'enctype -> "multipart/form-data", 'class -> "form-horizontal") {
     <div class="control-group">
       <label class="control-label" for="project-name">Project name</label>
       <div class="controls">
-        <input type="text" id="project-name" name="project-name" placeholder="junit-4.10">
+        <input type="text" id="project-name" name="project-name" placeholder="junit-4.11">
       </div>
     </div>
     <div class="control-group">
@@ -19,7 +19,7 @@
       <div class="controls">
         <input name="project-sources" id="project-sources" type="file" style="display:none">
         <div class="input-append">
-          <input id="project-sources-filename" placeholder="junit-4.10-src.jar" type="text">
+          <input id="project-sources-filename" placeholder="junit-4.11-src.jar" type="text">
           <a class="btn" onclick="$('input[id=project-sources]').click();">Browse</a>
         </div>
         <script type="text/javascript">

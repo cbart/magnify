@@ -1,10 +1,9 @@
 package magnify.model.graph
 
-import com.tinkerpop.blueprints.{Graph => BlueprintsGraph, Edge, Vertex}
+import com.tinkerpop.blueprints.impls.tg.TinkerGraph
+import com.tinkerpop.blueprints.{Graph => BlueprintsGraph, _}
 import com.tinkerpop.gremlin.java.GremlinPipeline
 import scala.collection.JavaConversions._
-import com.tinkerpop.blueprints.impls.tg.TinkerGraph
-import java.util.Collections
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -14,10 +13,11 @@ object Graph {
     collectionAsScalaIterable(pipe.toList)
 
   def tinker: Graph =
-    new Graph(new TinkerGraph())
+    new Graph(new TinkerGraph)
 }
 
 final class Graph (blueprintsGraph: BlueprintsGraph) {
+
   def vertices: GremlinPipeline[Vertex, Vertex] =
     new GremlinPipeline(blueprintsGraph.getVertices, true)
 

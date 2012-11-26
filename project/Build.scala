@@ -18,7 +18,7 @@ object ApplicationBuild extends Build {
       "org.scalaz" %% "scalaz-core" % "6.0.4") ++
     Seq(
       "com.typesafe.akka" % "akka-testkit" % "2.0.3" % "test",
-      "junit" % "junit" % "4.10" % "test",
+      "junit" % "junit" % "4.11" % "test",
       "org.scalatest" %% "scalatest" % "1.8" % "test",
       "org.mockito" % "mockito-all" % "1.9.5" % "test")
 
