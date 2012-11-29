@@ -1,0 +1,38 @@
+@(projectName: String)(implicit flash: Flash, projects: Projects)
+
+@import helper._
+
+@main("Add new project") {
+  <div class="page-header">
+    <h1>Upload call count</h1>
+  </div>
+  @flashSection()
+  @form(action = routes.UploadCallCount.upload(projectName),
+      'enctype -> "multipart/form-data",
+      'class -> "form-horizontal") {
+    <div class="control-group">
+      <label class="control-label" for="project-sources">Call count</label>
+      <div class="controls">
+        <input name="project-sources" id="project-sources" type="file" style="display:none">
+        <div class="input-append">
+          <input id="project-sources-filename" placeholder="junit-callcount.csv" type="text">
+          <a class="btn" onclick="$('input[id=project-sources]').click();">Browse</a>
+        </div>
+        <script type="text/javascript">
+          $('input[id=project-sources]').change(function() {
+            var filename = $(this).val().split('\\').pop().split('/').pop();
+            $('#project-sources-filename').val(filename);
+          });
+        </script>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-primary">
+          <i class="icon-upload-alt"></i>
+          Upload
+        </button>
+      </div>
+    </div>
+  }
+}
