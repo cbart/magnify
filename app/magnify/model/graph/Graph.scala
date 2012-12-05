@@ -16,7 +16,7 @@ object Graph {
     new Graph(new TinkerGraph)
 }
 
-final class Graph (blueprintsGraph: BlueprintsGraph) {
+final class Graph (val blueprintsGraph: BlueprintsGraph) {
 
   def vertices: GremlinPipeline[Vertex, Vertex] =
     new GremlinPipeline(blueprintsGraph.getVertices, true)

@@ -2,7 +2,6 @@ $ ->
   makeSvg = (jsonAddress) ->
     width = $("#chart").width()
     height = 500
-    radius = 6
 
     color = (kind) ->
       switch kind
@@ -79,7 +78,7 @@ $ ->
         .enter()
         .append("circle")
         .attr("class", "node")
-        .attr("r", radius)
+        .attr("r", (d) -> Math.max(3, 100.0 * d["page-rank"]))
         .style("fill", (d) -> color(d.kind))
         .call(force.drag)
 

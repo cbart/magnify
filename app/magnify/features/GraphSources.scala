@@ -1,6 +1,6 @@
 package magnify.features
 
-import com.tinkerpop.blueprints.Vertex
+import com.tinkerpop.blueprints.{Edge, Vertex}
 import com.tinkerpop.gremlin.java.GremlinPipeline
 import magnify.model.graph.Graph
 import magnify.model.{Archive, Ast}
@@ -9,6 +9,8 @@ import scala.collection.mutable
 import play.api.Logger
 import com.tinkerpop.pipes.Pipe
 import com.tinkerpop.gremlin.pipes.transform.OutPipe
+import edu.uci.ics.jung.algorithms.scoring.PageRank
+import com.tinkerpop.blueprints.oupls.jung.GraphJung
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -67,6 +69,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     addPackageEdges(graph, packageByName)
     addClassPackageEdges(graph, classes, packageByName)
     addPackageImports(graph)
+    addPageRank(graph)
   }
 
   private def packagesFrom(classes: Iterable[Vertex]): Set[String] =
@@ -112,6 +115,14 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
           .toList.toSet[Vertex]
     } {
       graph.addEdge(pkg, "package-imports", importsPkg)
+    }
+  }
+
+  private def addPageRank(graph: Graph) {
+    val pageRank = new PageRank[Vertex, Edge](new GraphJung(graph.blueprintsGraph), 0.15)
+    pageRank.evaluate()
+    for (vertex <- graph.blueprintsGraph.getVertices) {
+      vertex.setProperty("page-rank", pageRank.getVertexScore(vertex).toString)
     }
   }
 
