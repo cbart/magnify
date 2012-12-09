@@ -17,6 +17,7 @@ object ApplicationBuild extends Build {
       "com.tinkerpop.blueprints" % "blueprints-graph-jung" % "2.1.0",
       "com.tinkerpop.gremlin" % "gremlin-java" % "2.1.0",
       "net.sf.jung" % "jung-algorithms" % "2.0.1",
+      "org.codehaus.javancss" % "javancss" % "32.53",
       "org.scalaz" %% "scalaz-core" % "6.0.4") ++
     Seq(  // test
       "com.typesafe.akka" % "akka-testkit" % "2.0.3" % "test",

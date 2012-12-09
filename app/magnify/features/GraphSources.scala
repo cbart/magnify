@@ -1,16 +1,15 @@
 package magnify.features
 
+import com.tinkerpop.blueprints.oupls.jung.GraphJung
 import com.tinkerpop.blueprints.{Edge, Vertex}
 import com.tinkerpop.gremlin.java.GremlinPipeline
+import edu.uci.ics.jung.algorithms.scoring.PageRank
+import java.io.ByteArrayInputStream
 import magnify.model.graph.Graph
 import magnify.model.{Archive, Ast}
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import play.api.Logger
-import com.tinkerpop.pipes.Pipe
-import com.tinkerpop.gremlin.pipes.transform.OutPipe
-import edu.uci.ics.jung.algorithms.scoring.PageRank
-import com.tinkerpop.blueprints.oupls.jung.GraphJung
+import scala.io.Source
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -24,10 +23,11 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     process(graph, classesFrom(file))
   }
 
-  private def classesFrom(file: Archive): Seq[Ast] = file.extract {
+  private def classesFrom(file: Archive): Seq[(Ast, String)] = file.extract {
     (name, content) =>
       if (isJavaFile(name)) {
-        parse(content)
+        val stringContent = Source.fromInputStream(content).getLines().mkString("\n")
+        for (ast <- parse(new ByteArrayInputStream(stringContent.getBytes("UTF-8")))) yield (ast, stringContent)
       } else {
         Seq()
       }
@@ -36,17 +36,18 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   private def isJavaFile(name: String): Boolean =
     name.endsWith(".java") && !name.endsWith("Test.java")
 
-  private def process(graph: Graph, classes: Iterable[Ast]) {
+  private def process(graph: Graph, classes: Iterable[(Ast, String)]) {
     addClasses(graph, classes)
-    addImports(graph, classes)
+    addImports(graph, classes.map(_._1))
     addPackages(graph)
   }
 
-  private def addClasses(graph: Graph, classes: Iterable[Ast]) {
-    for (cls <- classes) {
+  private def addClasses(graph: Graph, classes: Iterable[(Ast, String)]) {
+    for ((ast, source) <- classes) {
       val vertex = graph.addVertex
       vertex.setProperty("kind", "class")
-      vertex.setProperty("name", cls.className)
+      vertex.setProperty("name", ast.className)
+      vertex.setProperty("source-code", source)
     }
   }
 
