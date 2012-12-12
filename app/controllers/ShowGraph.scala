@@ -72,15 +72,14 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
       val name = vertex.getProperty("name").toString
       val kind = vertex.getProperty("kind").toString
       val pageRank = vertex.getProperty("page-rank").toString
-      Map("name" -> name, "kind" -> kind, "page-rank" -> pageRank) ++ metric(vertex, "lines-of-code")
+      Map("name" -> name, "kind" -> kind, "page-rank" -> pageRank) ++ property(vertex, "metric--lines-of-code")
     }
 
-  private def metric(v: Vertex, name: String): Map[String, String] =
-    v.getProperty("metric--" + name) match {
+  private def property(v: Element, name: String): Map[String, String] =
+    v.getProperty(name) match {
       case null => Map()
       case value => Map(name -> value.toString)
     }
-
 
   private def toMap(edges: Iterable[Edge], idByVertexName: Map[String, Int]): Seq[Map[String, JsValue]] =
     for {
@@ -90,7 +89,7 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
     } yield Map(
       "source" -> toJson(source),
       "target" -> toJson(target),
-      "kind" -> toJson(edge.getLabel))
+      "kind" -> toJson(edge.getLabel)) ++ property(edge, "count").mapValues(s => toJson(s))
 
   private def name(edge: Edge, direction: Direction): String =
     edge.getVertex(direction).getProperty("name").toString

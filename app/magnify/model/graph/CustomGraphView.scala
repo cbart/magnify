@@ -27,5 +27,6 @@ final class CustomGraphView (graph: Graph) extends GraphView {
   private val imports =
     new OrFilterPipe[Edge](
       new LabelFilterPipe("package-imports", Filter.EQUAL),
-      new LabelFilterPipe("in-package", Filter.EQUAL))
+      new LabelFilterPipe("in-package", Filter.EQUAL),
+      new LabelFilterPipe("calls", Filter.EQUAL))
 }

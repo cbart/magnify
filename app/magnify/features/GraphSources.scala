@@ -4,12 +4,14 @@ import com.tinkerpop.blueprints.oupls.jung.GraphJung
 import com.tinkerpop.blueprints.{Edge, Vertex}
 import com.tinkerpop.gremlin.java.GremlinPipeline
 import edu.uci.ics.jung.algorithms.scoring.PageRank
-import java.io.ByteArrayInputStream
+import java.io.{File, ByteArrayInputStream}
 import magnify.model.graph.Graph
 import magnify.model.{Archive, Ast}
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.io.Source
+import com.avaje.ebean.text.csv.CsvCallback
+import scala.util.matching.Regex
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -171,6 +173,29 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
         .toList.toSeq.asInstanceOf[mutable.Seq[Int]]
       val avg = elems.sum.toDouble / elems.size.toDouble
       pkg.setProperty("metric--lines-of-code", avg)
+    }
+  }
+
+  private object CsvCall extends Regex("""([^;]+);([^;]+);(\d+)""", "from", "to", "count")
+
+  private object PackageFromCall extends Regex("""(.* |^)([^ ]*)\.[^.]+\.[^.(]+\(.*""")
+
+  def addRuntime(name: String, file: File) {
+    for (graph <- get(name)) {
+      val runtime = for {
+        CsvCall(from, to, count) <- Source.fromFile(file).getLines().toSeq
+        PackageFromCall(_, fromPackage) = from
+        PackageFromCall(_, toPackage) = to
+      } yield (fromPackage, toPackage, count.toInt)
+      val calls = runtime.groupBy {case (a, b, _) => (a, b)}.mapValues(s => s.map(_._3).sum)
+      for {
+        ((fromPackage, toPackage), count) <- calls
+        from <- graph.vertices.has("kind", "package").has("name", fromPackage).toList
+        to <- graph.vertices.has("kind", "package").has("name", toPackage).toList
+      } {
+        val e = graph.addEdge(from.asInstanceOf[Vertex], "calls", to.asInstanceOf[Vertex])
+        e.setProperty("count", count.toString)
+      }
     }
   }
 }

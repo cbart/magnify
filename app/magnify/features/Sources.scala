@@ -14,5 +14,5 @@ trait Sources {
 
   def get(name: String): Option[Graph]
 
-  def addRuntime(name: String, file: File) {}
+  def addRuntime(name: String, file: File)
 }

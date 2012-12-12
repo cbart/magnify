@@ -5,7 +5,7 @@ $ ->
 
     badness = d3.scale.linear().domain([-1, 300]).range(["green", "red"])
     color = (d) ->
-      badness(d["lines-of-code"])
+      badness(d["metric--lines-of-code"])
 
     strength = (link) ->
       switch link.kind
@@ -107,35 +107,42 @@ $ ->
 
     badness = d3.scale.linear().domain([-1, 300]).range(["green", "red"])
     color = (d) ->
-      badness(d["lines-of-code"])
+      badness(d["metric--lines-of-code"])
 
     defaultStrengths =
       inPackage: 0.5
       packageImports: 0.1
+      calls: 0.01
     strengths =
       inPackage: defaultStrengths.inPackage
       packageImports: defaultStrengths.packageImports
+      calls: defaultStrengths.calls
     strength = (link) ->
       switch link.kind
         when "package-imports" then strengths.packageImports
         when "in-package" then strengths.inPackage
+        when "calls" then strengths.calls
 
     defaultLinkColors =
       inPackage: "#cc0000"
       packageImports: "#babdb6"
+      calls: "#fce94f"
     linkColors =
-      inPackage: "#cc0000"
-      packageImports: "#babdb6"
+      inPackage: defaultLinkColors.inPackage
+      packageImports: defaultLinkColors.packageImports
+      calls: defaultLinkColors.calls
     linkColor = (link) ->
       switch link.kind
         when "in-package" then linkColors.inPackage
         when "package-imports" then linkColors.packageImports
+        when "calls" then linkColors.calls
 
     linkWidth = (link) ->
       switch link.kind
         when "in-package" then 1.5
         when "package-imports" then 1
         when "imports" then 1
+        when "calls" then Math.min(link.count / 10.0, 5)
 
     force = d3.layout.force()
     .charge(-120)
@@ -177,25 +184,19 @@ $ ->
       .style("stroke-width", linkWidth)
       .style("stroke", linkColor)
 
-      $(".check-imports").on "click", ->
-        if ($(this).is(":checked"))
-          linkColors.packageImports = defaultLinkColors.packageImports
-          strengths.packageImports = defaultStrengths.packageImports
-        else
-          linkColors.packageImports = "transparent"
-          strengths.packageImports = 0
-        link.style("stroke", linkColor)
-        force.linkStrength(strength).start()
-
-      $(".check-contains").on "click", ->
-        if ($(this).is(":checked"))
-          linkColors.inPackage = defaultLinkColors.inPackage
-          strengths.inPackage = defaultStrengths.inPackage
-        else
-          linkColors.inPackage = "transparent"
-          strengths.inPackage = 0
-        link.style("stroke", linkColor)
-        force.linkStrength(strength).start()
+      check = (selector, attr) ->
+        $(selector).on "click", ->
+          if ($(this).is(":checked"))
+            linkColors[attr] = defaultLinkColors[attr]
+            strengths[attr] = defaultStrengths[attr]
+          else
+            linkColors[attr] = "transparent"
+            strengths[attr] = 0
+          link.style("stroke", linkColor)
+          force.linkStrength(strength).start()
+      check(".check-imports", "packageImports")
+      check(".check-contains", "inPackage")
+      check(".check-runtime", "calls")
 
       linkedByIndex = {}
       json.edges.forEach((d) -> linkedByIndex[d.source.index + "," + d.target.index] = 1)
@@ -259,7 +260,7 @@ $ ->
                   contains
                 </label>
                 <label class="checkbox inline">
-                  <input type="checkbox" value="" disabled="disabled"/>
+                  <input type="checkbox" value="" checked="checked" class="check-runtime"/>
                   runtime
                 </label>
               </div>
