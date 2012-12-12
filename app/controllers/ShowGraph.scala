@@ -44,7 +44,7 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
 
   def showPkgImportsJson(name: String) = Action { implicit request =>
     withGraph(name) { graph =>
-      Ok(json(new PackagesWithImportsGraphView(graph)))
+      Ok(json(new PackageImportsGraphView(graph)))
     }
   }
 
@@ -72,8 +72,15 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
       val name = vertex.getProperty("name").toString
       val kind = vertex.getProperty("kind").toString
       val pageRank = vertex.getProperty("page-rank").toString
-      Map("name" -> name, "kind" -> kind, "page-rank" -> pageRank)
+      Map("name" -> name, "kind" -> kind, "page-rank" -> pageRank) ++ metric(vertex, "lines-of-code")
     }
+
+  private def metric(v: Vertex, name: String): Map[String, String] =
+    v.getProperty("metric--" + name) match {
+      case null => Map()
+      case value => Map(name -> value.toString)
+    }
+
 
   private def toMap(edges: Iterable[Edge], idByVertexName: Map[String, Int]): Seq[Map[String, JsValue]] =
     for {

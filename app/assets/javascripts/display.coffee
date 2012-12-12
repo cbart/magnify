@@ -3,10 +3,9 @@ $ ->
     width = $("#chart").width()
     height = 500
 
-    color = (kind) ->
-      switch kind
-        when "class" then "#d3d7cf"
-        when "package" then "#2e3436"
+    badness = d3.scale.linear().domain([-1, 300]).range(["green", "red"])
+    color = (d) ->
+      badness(d["lines-of-code"])
 
     strength = (link) ->
       switch link.kind
@@ -78,8 +77,8 @@ $ ->
         .enter()
         .append("circle")
         .attr("class", "node")
-        .attr("r", (d) -> Math.max(3, 100.0 * d["page-rank"]))
-        .style("fill", (d) -> color(d.kind))
+        .attr("r", (d) -> 3 + Math.max(3, 100.0 * d["page-rank"]))
+        .style("fill", color)
         .call(force.drag)
 
       node

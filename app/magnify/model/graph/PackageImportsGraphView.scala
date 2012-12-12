@@ -9,7 +9,7 @@ import scala.collection.JavaConversions._
 /**
  * @author Cezary Bartoszuk (cezary@codilime.com)
  */
-final class PackagesWithImportsGraphView(graph: Graph) extends GraphView {
+final class PackageImportsGraphView(graph: Graph) extends GraphView {
 
   override def vertices: Iterable[Vertex] =
     graph.vertices
@@ -21,11 +21,9 @@ final class PackagesWithImportsGraphView(graph: Graph) extends GraphView {
 
   override def edges: Iterable[Edge] =
     graph.edges
-        .add(inPackageOrImports)
+        .add(imports)
         .toList
 
-  private val inPackageOrImports =
-    new OrFilterPipe[Edge](
-      new LabelFilterPipe("in-package", Filter.EQUAL),
-      new LabelFilterPipe("package-imports", Filter.EQUAL))
+  private val imports =
+    new LabelFilterPipe("package-imports", Filter.EQUAL)
 }

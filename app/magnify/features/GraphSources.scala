@@ -40,6 +40,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     addClasses(graph, classes)
     addImports(graph, classes.map(_._1))
     addPackages(graph)
+    computeLinesOfCode(graph)
   }
 
   private def addClasses(graph: Graph, classes: Iterable[(Ast, String)]) {
@@ -150,4 +151,26 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   override def get(name: String): Option[Graph] =
     graphs.get(name)
+
+  private def computeLinesOfCode(graph: Graph) {
+    graph
+      .vertices
+      .has("kind", "class")
+      .toList foreach {
+      case v: Vertex =>
+        val linesOfCode = v.getProperty("source-code").toString.count(_ == '\n')
+        v.setProperty("metric--lines-of-code", linesOfCode)
+    }
+    graph
+      .vertices
+      .has("kind", "package").toList foreach { case pkg: Vertex =>
+      val elems = graph.vertices.has("name", pkg.getProperty("name"))
+        .in("in-package")
+        .has("kind", "class")
+        .property("metric--lines-of-code")
+        .toList.toSeq.asInstanceOf[mutable.Seq[Int]]
+      val avg = elems.sum.toDouble / elems.size.toDouble
+      pkg.setProperty("metric--lines-of-code", avg)
+    }
+  }
 }
