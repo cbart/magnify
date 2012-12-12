@@ -1,4 +1,4 @@
-@(title: String, head: Html = Html(""))(content: Html)(implicit flash: Flash, projects: Projects)
+@(title: String, head: Html = Html(""), projectName: String = "")(content: Html)(implicit flash: Flash, projects: Projects)
 
 <!doctype html>
 <html>
@@ -16,10 +16,10 @@
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span2">
-          @nav()
+          @nav(projectName)
         </div>
         <div class="span10">
-          <section>
+          <section class="map">
             @content
           </section>
         </div>

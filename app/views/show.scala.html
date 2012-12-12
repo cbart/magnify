@@ -5,16 +5,32 @@
   <script src="@routes.Assets.at("/javascripts/display.js")"></script>
 }
 
-@main(name, head) {
+@main(name, head, projectName=name) {
   <ul class="nav nav-tabs nav-graph-detail-level">
     <li class="disabled">
       <a href="#">@name</a>
     </li>
     <li class="active nav-graph-packages-tab">
-      <a href="#" class="packages-button"><i class="icon-sitemap"></i> Package tree</a>
+      <a
+          href="#"
+          class="packages-button"
+          rel="tooltip"
+          data-original-title="Shows packages with 'contains' relationship. Nodes size according to their Page rank and colored with LOC."
+          data-placement="bottom">
+        <i class="icon-sitemap"></i>
+        Package tree
+      </a>
     </li>
     <li class="nav-graph-package-imports-tab">
-      <a href="#" class="package-imports-button"><i class="icon-retweet"></i> Package imports</a>
+      <a
+          href="#"
+          class="package-imports-button"
+          rel="tooltip"
+          data-original-title="Shows packages with 'imports' relationship. Nodes size according to their Page rank and colored with LOC."
+          data-placement="bottom">
+        <i class="icon-retweet"></i>
+        Package imports
+      </a>
     </li>
     <li class="nav-graph-custom-tab">
       <a href="#" class="custom-button"><i class="icon-beaker"></i> Custom</a>

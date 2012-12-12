@@ -1,11 +1,11 @@
-@()(implicit projects: Projects)
+@(current: String)(implicit projects: Projects)
 
 <ul class="nav nav-tabs nav-stacked mag-sidenav">
   <li>
     <a href="@routes.ZipSourcesUpload.form()">New project</a>
   </li>
   @for(projectName <- projects.names.sorted) {
-    <li>
+    <li @if(projectName == current) { class="active" }>
       <a href="@routes.ShowGraph.show(projectName)">@projectName</a>
     </li>
   }

@@ -1,14 +1,15 @@
 package magnify.model.graph
 
 import com.tinkerpop.blueprints.{Edge, Vertex}
+import scala.collection.JavaConversions._
 import com.tinkerpop.gremlin.pipes.filter.{LabelFilterPipe, PropertyFilterPipe}
 import com.tinkerpop.pipes.filter.FilterPipe.Filter
-import scala.collection.JavaConversions._
+import com.tinkerpop.pipes.filter.OrFilterPipe
 
 /**
  * @author Cezary Bartoszuk (cezary@codilime.com)
  */
-final class PackageImportsGraphView(graph: Graph) extends GraphView {
+final class CustomGraphView (graph: Graph) extends GraphView {
 
   override def vertices: Iterable[Vertex] =
     graph.vertices
@@ -24,5 +25,7 @@ final class PackageImportsGraphView(graph: Graph) extends GraphView {
         .toList
 
   private val imports =
-    new LabelFilterPipe("package-imports", Filter.EQUAL)
+    new OrFilterPipe[Edge](
+      new LabelFilterPipe("package-imports", Filter.EQUAL),
+      new LabelFilterPipe("in-package", Filter.EQUAL))
 }

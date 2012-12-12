@@ -30,9 +30,9 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
     Redirect(routes.ZipSourcesUpload.form()).flashing("warning" -> message)
   }
 
-  def showWholeJson(name: String) = Action { implicit request =>
+  def showCustomJson(name: String) = Action { implicit request =>
     withGraph(name) { graph =>
-      Ok(json(new WholeGraphView(graph)))
+      Ok(json(new CustomGraphView(graph)))
     }
   }
 
