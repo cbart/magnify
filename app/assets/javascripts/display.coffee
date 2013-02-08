@@ -106,8 +106,6 @@ $ ->
     height = $("#chart").height()
 
     badness = d3.scale.linear().domain([-1, 300]).range(["green", "red"])
-    color = (d) ->
-      badness(d["metric--lines-of-code"])
 
     defaultStrengths =
       inPackage: 0.5
@@ -128,9 +126,9 @@ $ ->
       packageImports: "#babdb6"
       calls: "#fce94f"
     linkColors =
-      inPackage: defaultLinkColors.inPackage
-      packageImports: defaultLinkColors.packageImports
-      calls: defaultLinkColors.calls
+      inPackage: "transparent"
+      packageImports: "transparent"
+      calls: "transparent"
     linkColor = (link) ->
       switch link.kind
         when "in-package" then linkColors.inPackage
@@ -147,7 +145,7 @@ $ ->
     force = d3.layout.force()
     .charge(-120)
     .linkDistance(30)
-    .linkStrength(strength)
+    .linkStrength(0)
     .size([width, height])
     .gravity(0.2)
 
@@ -182,7 +180,7 @@ $ ->
       .append("svg:line")
       .attr("class", "link")
       .style("stroke-width", linkWidth)
-      .style("stroke", linkColor)
+      .style("stroke", "transparent")
 
       check = (selector, attr) ->
         $(selector).on "click", ->
@@ -209,9 +207,25 @@ $ ->
       .enter()
       .append("circle")
       .attr("class", "node")
-      .attr("r", (d) -> 3 + Math.max(3, 100.0 * d["page-rank"]))
-      .style("fill", color)
+      .attr("r", 5)
+      .style("fill", "#000000")
       .call(force.drag)
+
+      $("""input[name="node-color"]""").on "click", ->
+        $this = $(this)
+        if ($this.is(":checked") and $this.attr("value") == "black")
+          color = "#000000"
+        else
+          color = (d) -> badness(d["metric--lines-of-code"])
+        node.style("fill", color).call(force.drag)
+
+      $("""input[name="node-size"]""").on "click", ->
+        $this = $(this)
+        if ($this.is(":checked") and $this.attr("value") == "constant")
+          size = 5
+        else
+          size = (d) -> 3 + Math.max(3, 100.0 * d["page-rank"])
+        node.attr("r", size).call(force.drag)
 
       node
       .append("title")
@@ -252,15 +266,15 @@ $ ->
               <label class="control-label">Edge</label>
               <div class="controls">
                 <label class="checkbox inline">
-                  <input type="checkbox" value="" checked="checked" class="check-imports"/>
+                  <input type="checkbox" value="" class="check-imports"/>
                   imports
                 </label>
                 <label class="checkbox inline">
-                  <input type="checkbox" value="" checked="checked" class="check-contains"/>
+                  <input type="checkbox" value="" class="check-contains"/>
                   contains
                 </label>
                 <label class="checkbox inline">
-                  <input type="checkbox" value="" checked="checked" class="check-runtime"/>
+                  <input type="checkbox" value="" class="check-runtime"/>
                   runtime
                 </label>
               </div>
@@ -269,7 +283,11 @@ $ ->
               <label class="control-label">Node size</label>
               <div class="controls">
                 <label class="radio">
-                  <input type="radio" value="" checked="checked"/>
+                  <input type="radio" name="node-size" value="constant" checked="checked"/>
+                  Constant
+                </label>
+                <label class="radio">
+                  <input type="radio" name="node-size" value="page-rank"/>
                   Page rank
                 </label>
               </div>
@@ -278,14 +296,14 @@ $ ->
               <label class="control-label">Node color</label>
               <div class="controls">
                 <label class="radio">
-                  <input type="radio" value="" checked="checked"/>
+                  <input type="radio" name="node-color" value="black" checked="checked"/>
+                  Black
+                </label>
+                <label class="radio">
+                  <input type="radio" name="node-color" value="by-avg-loc"/>
                   Avg. lines of code / class
                 </label>
                 <!--<label class="radio">
-                  <input type="radio" value=""/>
-                  Avg. cyclomatic complexity / method
-                </label>
-                <label class="radio">
                   <input type="radio" value=""/>
                   Avg number of methods / class
                 </label>
