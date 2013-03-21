@@ -4,7 +4,7 @@ import com.tinkerpop.blueprints.oupls.jung.GraphJung
 import com.tinkerpop.blueprints.{Edge, Vertex}
 import com.tinkerpop.gremlin.java.GremlinPipeline
 import edu.uci.ics.jung.algorithms.scoring.PageRank
-import java.io.{File, ByteArrayInputStream}
+import java.io._
 import magnify.model.graph.Graph
 import magnify.model.{Archive, Ast}
 import scala.collection.JavaConversions._
@@ -12,6 +12,7 @@ import scala.collection.mutable
 import scala.io.Source
 import com.avaje.ebean.text.csv.CsvCallback
 import scala.util.matching.Regex
+import magnify.model.Ast
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -27,12 +28,27 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def classesFrom(file: Archive): Seq[(Ast, String)] = file.extract {
     (name, content) =>
-      if (isJavaFile(name)) {
-        val stringContent = Source.fromInputStream(content).getLines().mkString("\n")
+      if (isJavaFile(name) ) {
+        val stringContent = inputStreamToString(content)
         for (ast <- parse(new ByteArrayInputStream(stringContent.getBytes("UTF-8")))) yield (ast, stringContent)
       } else {
         Seq()
       }
+  }
+
+  private def inputStreamToString(is: InputStream) = {
+    val rd: BufferedReader = new BufferedReader(new InputStreamReader(is, "UTF-8"))
+    val builder = new StringBuilder()
+    try {
+      var line = rd.readLine
+      while (line != null) {
+        builder.append(line + "\n")
+        line = rd.readLine
+      }
+    } finally {
+      rd.close()
+    }
+    builder.toString()
   }
 
   private def isJavaFile(name: String): Boolean =
