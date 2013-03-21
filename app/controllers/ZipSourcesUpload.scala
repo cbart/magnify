@@ -53,7 +53,7 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
       if filePart.contentType.map(allowedFormats) getOrElse false
     } yield {
       val newFile = File.createTempFile(filePart.filename, ".tmp.zip")
-      filePart.ref.moveTo(newFile)
+      filePart.ref.moveTo(newFile, replace=true)
       newFile
     }
 }
