@@ -25,10 +25,6 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
 
   private val allowedFormats = Set("application/zip", "application/x-java-archive")
 
-  private val success = "success" -> "Project was added."
-
-  private val failure = "error" -> "Something went wrong. Please try again."
-
   private val progress = "success" -> "Project uploaded. Interpreting in background."
 
   implicit val pool: ExecutionContext =
@@ -39,10 +35,8 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
   }
 
   def upload = Action(parse.multipartFormData) { implicit request =>
-    Future {
-      for (name <- projectName; file <- projectSources) {
-        sources.add(name, new Zip(file))
-      }
+    for (file <- projectSources(request)) Future {
+      for (name <- projectName) sources.add(name, new Zip(file))
     }
     Redirect(routes.ZipSourcesUpload.form()).flashing(progress)
   }
@@ -53,10 +47,13 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
       case _ => None
     }
 
-  private def projectSources(implicit request: MultipartRequest): Option[File] =
+  private def projectSources(request: MultipartRequest): Option[File] =
     for {
       filePart <- request.body.file("project-sources")
       if filePart.contentType.map(allowedFormats) getOrElse false
-      MultipartFormData.FilePart(_, _, _, TemporaryFile(file)) = filePart
-    } yield file
+    } yield {
+      val newFile = File.createTempFile(filePart.filename, ".tmp.zip")
+      filePart.ref.moveTo(newFile)
+      newFile
+    }
 }
