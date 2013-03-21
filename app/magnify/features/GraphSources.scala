@@ -21,8 +21,8 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   override def add(name: String, file: Archive) {
     val graph = Graph.tinker
-    graphs += name -> graph
     process(graph, classesFrom(file))
+    graphs += name -> graph
   }
 
   private def classesFrom(file: Archive): Seq[(Ast, String)] = file.extract {
