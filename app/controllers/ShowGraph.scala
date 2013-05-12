@@ -16,14 +16,18 @@ object ShowGraph extends ShowGraph(inject[Sources])
 sealed class ShowGraph (protected override val sources: Sources) extends Controller with ProjectList {
 
   def show[A](name: String) = Action { implicit request =>
-    sources.get(name) match {
-      case Some(_) => showHtml(name)
-      case None => projectNotFound(name)
+    if (sources.list.contains(name)) {
+      showHtml(name)
+    } else {
+      projectNotFound(name)
     }
   }
 
   private def showHtml(projectName: String)(implicit request: Request[AnyContent]): Result =
-    Ok(views.html.show(projectName))
+    sources.get(projectName) match {
+      case Some(_) => Ok(views.html.show(projectName))
+      case None => Ok(views.html.showJson(projectName))
+    }
 
   private def projectNotFound(projectName: String)(implicit request: Request[AnyContent]): Result = {
     val message = "Project \"%s\" was not found. Why not create new one?" format projectName
@@ -51,7 +55,11 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
   private def withGraph(name: String)(action: Graph => Result)(implicit request: Request[AnyContent]): Result =
     sources.get(name) match {
       case Some(graph) => action(graph)
-      case None => projectNotFound
+      case None =>
+        sources.getJson(name) match {
+          case Some(json) => Ok(json.getContents)
+          case None => projectNotFound
+        }
     }
 
   private def projectNotFound(implicit request: Request[AnyContent]): Result =

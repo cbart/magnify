@@ -39,4 +39,40 @@
       </div>
     </div>
   }
+  <hr/>
+  <div class="page-header">
+    <h1>Upload json graph</h1>
+  </div>
+  @form(action = routes.ZipSourcesUpload.uploadJson, 'enctype -> "multipart/form-data", 'class -> "form-horizontal") {
+    <div class="control-group">
+      <label class="control-label" for="project-name">Project name</label>
+      <div class="controls">
+        <input type="text" id="project-name" name="project-name" placeholder="junit-4.11">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="project-sources">JSON graph</label>
+      <div class="controls">
+        <input name="project-sources" id="project-json" type="file" style="display:none">
+        <div class="input-append">
+          <input id="project-sources-filename-json" placeholder="junit-4.11.json" type="text">
+          <a class="btn" onclick="$('input[id=project-json]').click();">Browse</a>
+        </div>
+        <script type="text/javascript">
+            $('input[id=project-json]').change(function() {
+            var filename = $(this).val().split('\\').pop().split('/').pop();
+            $('#project-sources-filename-json').val(filename);
+            });
+        </script>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-primary">
+          <i class="icon-upload-alt"></i>
+            Create
+        </button>
+      </div>
+    </div>
+  }
 }

@@ -1,0 +1,22 @@
+@(name: String)(implicit flash: Flash, projects: Projects)
+
+@head = {
+  <script src="@routes.Assets.at("javascripts/d3.v2.js")"></script>
+  <script src="@routes.Assets.at("javascripts/display.js")"></script>
+}
+
+@main(name, head, projectName=name) {
+  <ul class="nav nav-tabs nav-graph-detail-level">
+    <li class="disabled">
+      <a href="#">@name</a>
+    </li>
+    <li class="active nav-graph-custom-tab">
+      <a href="#" class="custom-button"><i class="icon-beaker"></i> Uploaded json</a>
+    </li>
+    <li class="disabled">
+      <a href="@routes.UploadCallCount.form(name)">Upload runtime data <i class="icon-plane"></i></a>
+    </li>
+  </ul>
+  <div id="chart">
+  </div>
+}

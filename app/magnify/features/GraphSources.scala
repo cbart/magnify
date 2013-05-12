@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.java.GremlinPipeline
 import edu.uci.ics.jung.algorithms.scoring.PageRank
 import java.io._
 import magnify.model.graph.Graph
-import magnify.model.{Archive, Ast}
+import magnify.model._
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.io.Source
@@ -19,11 +19,16 @@ import magnify.model.Ast
  */
 private[features] final class GraphSources (parse: Parser, imports: Imports) extends Sources {
   private val graphs = mutable.Map[String, Graph]()
+  private val importedGraphs = mutable.Map[String, Json]()
 
   override def add(name: String, file: Archive) {
     val graph = Graph.tinker
     process(graph, classesFrom(file))
     graphs += name -> graph
+  }
+
+  override def add(name: String, graph: Json) {
+    importedGraphs += name -> graph
   }
 
   private def classesFrom(file: Archive): Seq[(Ast, String)] = file.extract {
@@ -165,10 +170,13 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
       .toList
 
   override def list: Seq[String] =
-    graphs.keys.toSeq
+    graphs.keys.toSeq ++ importedGraphs.keys.toSeq
 
   override def get(name: String): Option[Graph] =
     graphs.get(name)
+
+  override def getJson(name: String) =
+    importedGraphs.get(name)
 
   private def computeLinesOfCode(graph: Graph) {
     graph
