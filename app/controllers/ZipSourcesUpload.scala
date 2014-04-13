@@ -7,7 +7,7 @@ import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, Future}
 
 import magnify.features.Sources
-import magnify.model.{Json, Zip}
+import magnify.model.{Git, Json, Zip}
 import magnify.modules.inject
 import play.api.libs.Files
 import play.api.mvc._
@@ -51,8 +51,21 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
     Redirect(routes.ZipSourcesUpload.form()).flashing(progress)
   }
 
+  def uploadGit = Action(parse.multipartFormData) { implicit request =>
+    for (path <- gitPath(request); name <- projectName) Future {
+      sources.add(name, new Git(path))
+    }
+    Redirect(routes.ZipSourcesUpload.form()).flashing(progress)
+  }
+
   private def projectName(implicit request: MultipartRequest): Option[String] =
-    request.body.dataParts.get("project-name").flatMap {
+    getForm("project-name", request)
+
+  private def gitPath(implicit request: MultipartRequest): Option[String] =
+    getForm("project-git-path", request)
+
+  private def getForm(name: String, request: MultipartRequest) =
+    request.body.dataParts.get(name).flatMap {
       case Seq(onlyName) => Some(onlyName)
       case _ => None
     }

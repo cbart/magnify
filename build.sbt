@@ -28,7 +28,9 @@ libraryDependencies ++=
     "org.scalatest" %% "scalatest" % "2.1.3" % "test",
     "org.mockito" % "mockito-all" % "1.9.5" % "test",
     // recorder
-    "asm" % "asm-all" % "3.3"
+    "asm" % "asm-all" % "3.3",
+    // git
+    "org.eclipse.jgit" % "org.eclipse.jgit" % "3.3.1.201403241930-r"
   )
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")

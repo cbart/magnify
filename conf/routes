@@ -11,6 +11,7 @@ GET         /project/:name/upload-call-count.html             controllers.Upload
 POST        /project/:name/upload-call-count.html             controllers.UploadCallCount.upload(name: String)
 GET         /project/upload.html                              controllers.ZipSourcesUpload.form
 POST        /project/upload.zip                               controllers.ZipSourcesUpload.upload
+POST        /project/upload.git                               controllers.ZipSourcesUpload.uploadGit
 POST        /project/upload.json                              controllers.ZipSourcesUpload.uploadJson
 
 GET         /                                                 controllers.ZipSourcesUpload.form
