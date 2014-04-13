@@ -1,18 +1,18 @@
 package magnify.services
 
 import java.io.ByteArrayInputStream
+
 import magnify.features.Parser
 import magnify.model.Ast
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
-final class ClassAndImportsParserTest extends FunSuite with ShouldMatchers {
+final class ClassAndImportsParserTest extends FunSuite with Matchers {
   val parser: Parser = new ClassAndImportsParser()
 
   test("should parse simple class with no imports yielding fully qualified name") {

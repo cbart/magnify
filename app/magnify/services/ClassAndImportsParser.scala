@@ -44,10 +44,15 @@ private[services] final class ClassAndImportsParser extends Parser {
     }
 
   private def getImports(unit: CompilationUnit): Seq[String] =
-    for {
-      anyImport <- orEmpty(unit.getImports)
-      if !anyImport.isStatic && !anyImport.isAsterisk
-    } yield extractName(anyImport.getName).mkString(".")
+    orEmpty(unit.getImports).filter((anyImport) => {
+      if (anyImport.isAsterisk) {
+        println("Skipping: " + extractName(anyImport.getName).mkString("."))
+      }
+      !anyImport.isStatic && !anyImport.isAsterisk
+    }).map((anyImport) => {
+      extractName(anyImport.getName).mkString(".")
+    })
+
 
   private def orEmpty[A](value: java.util.List[A]): Seq[A] =
     Option(value).map(_.toSeq).getOrElse(Seq())

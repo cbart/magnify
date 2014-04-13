@@ -4,16 +4,14 @@ import akka.actor.ActorSystem
 import com.google.inject._
 import magnify.testing.ActorsSuite
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
-
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
-final class ActorsTest extends FunSuite with ShouldMatchers with ActorsSuite {
+final class ActorsTest extends FunSuite with Matchers with ActorsSuite {
   val injector = Guice.createInjector(new Actors())
 
   def system = injector.getInstance(classOf[ActorSystem])

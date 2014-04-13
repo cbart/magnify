@@ -1,9 +1,11 @@
 package controllers
 
-import akka.dispatch._
 import java.io.File
 import java.lang.String
 import java.util.concurrent.Executors
+
+import scala.concurrent.{ExecutionContext, Future}
+
 import magnify.features.Sources
 import magnify.model.{Json, Zip}
 import magnify.modules.inject
@@ -22,7 +24,7 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
 
   private val allowedFormats = Set("application/zip", "application/x-java-archive",
     "application/json", "application/x-javascript", "text/javascript",
-    "text/x-javascript", "text/x-json", "application/octet-stream")
+    "text/x-javascript", "text/x-json", "application/octet-stream", "application/java-archive")
 
   private val progress = "success" -> "Project uploaded. Interpreting in background."
 

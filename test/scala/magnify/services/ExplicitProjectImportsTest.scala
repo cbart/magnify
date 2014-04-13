@@ -2,15 +2,14 @@ package magnify.services
 
 import magnify.model.Ast
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
-final class ExplicitProjectImportsTest extends FunSuite with ShouldMatchers {
+final class ExplicitProjectImportsTest extends FunSuite with Matchers {
   val imports = new ExplicitProjectImports()
 
   test("should produce who-imports-who mapping refering only to project classes") {

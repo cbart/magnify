@@ -1,18 +1,18 @@
 package magnify.features
 
-import com.tinkerpop.blueprints.oupls.jung.GraphJung
+import java.io._
+
+import scala.collection.mutable
+import scala.collection.JavaConversions._
+import scala.io.Source
+import scala.util.matching.Regex
+
 import com.tinkerpop.blueprints.{Edge, Vertex}
+import com.tinkerpop.blueprints.oupls.jung.GraphJung
 import com.tinkerpop.gremlin.java.GremlinPipeline
 import edu.uci.ics.jung.algorithms.scoring.PageRank
-import java.io._
-import magnify.model.graph.Graph
 import magnify.model._
-import scala.collection.JavaConversions._
-import scala.collection.mutable
-import scala.io.Source
-import com.avaje.ebean.text.csv.CsvCallback
-import scala.util.matching.Regex
-import magnify.model.Ast
+import magnify.model.graph.Graph
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
