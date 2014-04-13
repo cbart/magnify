@@ -45,7 +45,7 @@ private[services] final class ClassAndImportsParser extends Parser {
 
   private def getImports(unit: CompilationUnit): Seq[String] =
     orEmpty(unit.getImports).filter((anyImport) => {
-      if (anyImport.isAsterisk) {
+      if (anyImport.isAsterisk && !anyImport.isStatic) {
         println("Skipping: " + extractName(anyImport.getName).mkString("."))
       }
       !anyImport.isStatic && !anyImport.isAsterisk
