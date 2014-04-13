@@ -17,8 +17,14 @@ private[services] final class ExplicitProjectImports extends Imports {
   override def resolve(classes: Iterable[Ast]): Map[String, Seq[String]] = {
     val classNames = classes.map(_.className).toSet
     val imports = for {
-      Ast(imports, name) <- classes
-    } yield (name, imports.filter(classNames))
+      Ast(imports, name, asteriskPackages, unresolvedClasses) <- classes
+    } yield {
+      val possibleImports = for (
+        packageName <- asteriskPackages;
+        className <- unresolvedClasses
+      ) yield (packageName + "." + className)
+      (name, imports.filter(classNames) ++ possibleImports.filter(classNames))
+    }
     imports.toMap
   }
 }
