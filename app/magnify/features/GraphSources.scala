@@ -195,8 +195,12 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
         .has("kind", "class")
         .property("metric--lines-of-code")
         .toList.toSeq.asInstanceOf[mutable.Seq[Int]]
-      val avg = elems.sum.toDouble / elems.size.toDouble
-      pkg.setProperty("metric--lines-of-code", avg)
+      if (elems.nonEmpty) {
+        val avg = elems.sum.toDouble / elems.size.toDouble
+        pkg.setProperty("metric--lines-of-code", avg)
+      } else {
+        pkg.setProperty("metric--lines-of-code", 0)
+      }
     }
   }
 
