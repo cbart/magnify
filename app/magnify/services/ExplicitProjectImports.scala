@@ -2,9 +2,11 @@ package magnify.services
 
 import magnify.features.Imports
 import magnify.model.Ast
-
+import play.api.Logger
 
 private[services] final class ExplicitProjectImports extends Imports {
+  val logger = Logger(classOf[ExplicitProjectImports].getSimpleName)
+
   /**
    * Resolves only explicit imports as:
    *
@@ -23,7 +25,9 @@ private[services] final class ExplicitProjectImports extends Imports {
         packageName <- asteriskPackages;
         className <- unresolvedClasses
       ) yield (packageName + "." + className)
-      (name, imports.filter(classNames) ++ possibleImports.filter(classNames))
+      val implicitImports = possibleImports.filter(classNames)
+      logger.debug("implicitImports in " + name + " : " + implicitImports.mkString(", "))
+      (name, imports.filter(classNames) ++ implicitImports)
     }
     imports.toMap
   }

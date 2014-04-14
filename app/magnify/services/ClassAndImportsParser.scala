@@ -1,18 +1,19 @@
 package magnify.services
 
-import japa.parser.{TokenMgrError, JavaParser}
-import japa.parser.ast.{ImportDeclaration, CompilationUnit}
-import japa.parser.ast.expr.{QualifiedNameExpr, NameExpr}
 import java.io.InputStream
+
+import scala.annotation.tailrec
+import scala.collection.mutable
+import scala.collection.JavaConversions._
+
+import japa.parser.{JavaParser, TokenMgrError}
+import japa.parser.ast.{CompilationUnit, ImportDeclaration}
+import japa.parser.ast.`type`.ClassOrInterfaceType
+import japa.parser.ast.expr.{NameExpr, QualifiedNameExpr}
+import japa.parser.ast.visitor.VoidVisitorAdapter
 import magnify.features.Parser
 import magnify.model.Ast
-import scala.annotation.tailrec
-import scala.collection.JavaConversions._
-import scala.collection.mutable
 import play.api.Logger
-import japa.parser.ast.visitor.VoidVisitorAdapter
-import japa.parser.ast.`type`.ClassOrInterfaceType
-
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -50,6 +51,8 @@ private[services] final class ClassAndImportsParser extends Parser with OrEmptyE
 
 private[this] class AstBuilder(val unit: CompilationUnit) extends VoidVisitorAdapter[Object] with OrEmptyEnhancer {
 
+  val logger = Logger(classOf[AstBuilder].getSimpleName)
+
   private val imports = getImports((anyImport) => !anyImport.isAsterisk)
   private val importedClasses = imports.map((fullImport) => fullImport.split("\\.").last).toSet
   private val prefix = packagePrefix
@@ -70,6 +73,7 @@ private[this] class AstBuilder(val unit: CompilationUnit) extends VoidVisitorAda
 
   override def visit(n: ClassOrInterfaceType, arg: Object) = {
     if (!importedClasses.contains(n.getName) && !javaLangClasses.contains(n.getName)) {
+      logger.debug("unresolved dependency: " + n.getName)
       unresolvedClasses += n.getName
     }
   }

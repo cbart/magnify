@@ -52,8 +52,8 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
   }
 
   def uploadGit = Action(parse.multipartFormData) { implicit request =>
-    for (path <- gitPath(request); name <- projectName) Future {
-      sources.add(name, new Git(path))
+    for (path <- gitPath; name <- projectName) Future {
+      sources.add(name, Git(path, gitBranch))
     }
     Redirect(routes.ZipSourcesUpload.form()).flashing(progress)
   }
@@ -64,9 +64,12 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
   private def gitPath(implicit request: MultipartRequest): Option[String] =
     getForm("project-git-path", request)
 
+  private def gitBranch(implicit request: MultipartRequest): Option[String] =
+    getForm("project-git-branch", request)
+
   private def getForm(name: String, request: MultipartRequest) =
     request.body.dataParts.get(name).flatMap {
-      case Seq(onlyName) => Some(onlyName)
+      case Seq(onlyName) => Some(onlyName).filter(_.trim.nonEmpty)
       case _ => None
     }
 
