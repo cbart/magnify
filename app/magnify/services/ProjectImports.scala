@@ -4,8 +4,8 @@ import magnify.features.Imports
 import magnify.model.Ast
 import play.api.Logger
 
-private[services] final class ExplicitProjectImports extends Imports {
-  val logger = Logger(classOf[ExplicitProjectImports].getSimpleName)
+private[services] final class ProjectImports extends Imports {
+  val logger = Logger(classOf[ProjectImports].getSimpleName)
 
   /**
    * Resolves only explicit imports as:
@@ -19,15 +19,15 @@ private[services] final class ExplicitProjectImports extends Imports {
   override def resolve(classes: Iterable[Ast]): Map[String, Seq[String]] = {
     val classNames = classes.map(_.className).toSet
     val imports = for {
-      Ast(imports, name, asteriskPackages, unresolvedClasses) <- classes
+      Ast(name, imports, asteriskPackages, unresolvedClasses) <- classes
     } yield {
       val possibleImports = for (
         packageName <- asteriskPackages;
         className <- unresolvedClasses
       ) yield (packageName + "." + className)
-      val implicitImports = possibleImports.filter(classNames)
+      val implicitImports = (possibleImports ++ unresolvedClasses).filter(classNames)
       logger.debug("implicitImports in " + name + " : " + implicitImports.mkString(", "))
-      (name, imports.filter(classNames) ++ implicitImports)
+      (name, (imports.filter(classNames) ++ implicitImports).toSeq)
     }
     imports.toMap
   }

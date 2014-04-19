@@ -1,10 +1,12 @@
 package magnify.model
 
+import java.util.Objects
+
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 final case class Ast(
-    imports: Seq[String],
     className: String,
-    asteriskPackages: Seq[String],
-    unresolvedClasses: Seq[String])
+    imports: Set[String],
+    asteriskPackages: Set[String],
+    unresolvedClasses: Set[String])
