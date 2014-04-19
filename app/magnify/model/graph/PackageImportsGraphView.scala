@@ -11,7 +11,7 @@ import scala.collection.JavaConversions._
 final class PackageImportsGraphView(graph: Graph) extends GraphView {
 
   override def vertices: Iterable[Vertex] =
-    graph.vertices
+    graph.headVertices
         .add(packages)
         .toList
 

@@ -21,9 +21,12 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   private val graphs = mutable.Map[String, Graph]()
   private val importedGraphs = mutable.Map[String, Json]()
 
-  override def add(name: String, file: Archive) {
+  override def add(name: String, vArchive: VersionedArchive) {
     val graph = Graph.tinker
-    process(graph, classesFrom(file))
+    vArchive.extract { (archive, diff) =>
+      process(graph, classesFrom(archive))
+      graph.commitVersion()
+    }
     graphs += name -> graph
   }
 
@@ -68,10 +71,8 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def addClasses(graph: Graph, classes: Iterable[(Ast, String)]) {
     for ((ast, source) <- classes) {
-      val vertex = graph.addVertex
-      vertex.setProperty("kind", "class")
-      vertex.setProperty("name", ast.className)
-      vertex.setProperty("source-code", source)
+      val (cls, _) = graph.addVertex("class", ast.className)
+      cls.setProperty("source-code", source)
     }
   }
 
@@ -88,7 +89,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   }
 
   private def addPackages(graph: Graph) {
-    def classes = graph.vertices.has("kind", "class").toList.toIterable.asInstanceOf[Iterable[Vertex]]
+    def classes = graph.headVertices.has("kind", "class").toList.toIterable.asInstanceOf[Iterable[Vertex]]
     val packageNames = packagesFrom(classes)
     val packageByName = addPackageVertices(graph, packageNames)
     addPackageEdges(graph, packageByName)
@@ -106,9 +107,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def addPackageVertices(graph: Graph, packageNames: Set[String]): Map[String, Vertex] =
     (for (pkgName <- packageNames) yield {
-      val pkg = graph.addVertex
-      pkg.setProperty("kind", "package")
-      pkg.setProperty("name", pkgName)
+      val (pkg, _) = graph.addVertex("package", pkgName)
       pkgName -> pkg
     }).toMap
 
@@ -128,7 +127,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def addPackageImports(graph: Graph) {
     for {
-      pkg <- graph.vertices
+      pkg <- graph.headVertices
           .has("kind", "class")
           .out("in-package")
           .toList.toSet[Vertex]
@@ -163,7 +162,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def classesNamed(graph: Graph, name: String): Iterable[Vertex] =
     graph
-      .vertices
+      .headVertices
       .has("kind", "class")
       .has("name", name)
       .asInstanceOf[GremlinPipeline[Vertex, Vertex]]
@@ -180,7 +179,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def computeLinesOfCode(graph: Graph) {
     graph
-      .vertices
+      .headVertices
       .has("kind", "class")
       .toList foreach {
       case v: Vertex =>
@@ -188,9 +187,9 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
         v.setProperty("metric--lines-of-code", linesOfCode)
     }
     graph
-      .vertices
+      .headVertices
       .has("kind", "package").toList foreach { case pkg: Vertex =>
-      val elems = graph.vertices.has("name", pkg.getProperty("name"))
+      val elems = graph.headVertices.has("name", pkg.getProperty("name"))
         .in("in-package")
         .has("kind", "class")
         .property("metric--lines-of-code")
@@ -218,8 +217,8 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
       val calls = runtime.groupBy {case (a, b, _) => (a, b)}.mapValues(s => s.map(_._3).sum)
       for {
         ((fromPackage, toPackage), count) <- calls
-        from <- graph.vertices.has("kind", "package").has("name", fromPackage).toList
-        to <- graph.vertices.has("kind", "package").has("name", toPackage).toList
+        from <- graph.headVertices.has("kind", "package").has("name", fromPackage).toList
+        to <- graph.headVertices.has("kind", "package").has("name", toPackage).toList
       } {
         val e = graph.addEdge(from.asInstanceOf[Vertex], "calls", to.asInstanceOf[Vertex])
         e.setProperty("count", count.toString)

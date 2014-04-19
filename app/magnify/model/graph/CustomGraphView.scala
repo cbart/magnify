@@ -12,7 +12,7 @@ import com.tinkerpop.pipes.filter.OrFilterPipe
 final class CustomGraphView (graph: Graph) extends GraphView {
 
   override def vertices: Iterable[Vertex] =
-    graph.vertices
+    graph.headVertices
         .add(packages)
         .toList
 
