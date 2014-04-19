@@ -114,14 +114,14 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def addPackageEdges(graph: Graph, packageByName: Map[String, Vertex]) {
     for ((name, pkg) <- packageByName; if name.nonEmpty) {
-      val outer = packageByName(pkgName(name))
+      val outer = packageByName(parentPkgName(name))
       graph.addEdge(pkg, "in-package", outer)
     }
   }
 
   private def addClassPackageEdges(graph: Graph, classes: Iterable[Vertex], packageByName: Map[String, Vertex]) {
     for (cls <- classes) {
-      val pkg = packageByName(pkgName(name(cls)))
+      val pkg = packageByName(parentPkgName(name(cls)))
       graph.addEdge(cls, "in-package", pkg)
     }
   }
@@ -151,7 +151,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     }
   }
 
-  private def pkgName(name: String): String =
+  private def parentPkgName(name: String): String =
     if (name.contains('.')) {
       name.substring(0, name.lastIndexOf('.'))
     } else {
