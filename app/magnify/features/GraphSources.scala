@@ -13,20 +13,33 @@ import com.tinkerpop.gremlin.java.GremlinPipeline
 import edu.uci.ics.jung.algorithms.scoring.PageRank
 import magnify.model._
 import magnify.model.graph.Graph
+import play.api.Logger
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 private[features] final class GraphSources (parse: Parser, imports: Imports) extends Sources {
+
+  private val logger = Logger(classOf[GraphSources].getSimpleName)
+
   private val graphs = mutable.Map[String, Graph]()
   private val importedGraphs = mutable.Map[String, Json]()
 
   override def add(name: String, vArchive: VersionedArchive) {
     val graph = Graph.tinker
     vArchive.extract { (archive, diff) =>
-      process(graph, classesFrom(archive))
-      graph.commitVersion()
+      val classes = classesFrom(archive)
+      val changedFiles = diff.map(_.changedFiles.keySet.filter(_.isDefined).map(_.get))
+          .getOrElse(classes.map(_.fileName).toSet)
+      val changedClasses = classes.filter { parsedFile =>
+        changedFiles.contains(parsedFile.fileName)
+      }
+      processRevision(graph, diff, changedClasses)
+      graph.commitVersion(diff)
+      Seq() // for monoid to work
     }
+    addPackageImports(graph)
+    computeLinesOfCode(graph)
     graphs += name -> graph
   }
 
@@ -34,11 +47,12 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     importedGraphs += name -> graph
   }
 
-  private def classesFrom(file: Archive): Seq[(Ast, String)] = file.extract {
-    (name, content) =>
-      if (isJavaFile(name) ) {
+  private def classesFrom(file: Archive): Seq[ParsedFile] = file.extract {
+    (fileName, content) =>
+      if (isJavaFile(fileName) ) {
         val stringContent = inputStreamToString(content)
-        for (ast <- parse(new ByteArrayInputStream(stringContent.getBytes("UTF-8")))) yield (ast, stringContent)
+        for (ast <- parse(new ByteArrayInputStream(stringContent.getBytes("UTF-8")))) yield (ParsedFile(
+            ast, stringContent, fileName))
       } else {
         Seq()
       }
@@ -62,18 +76,26 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   private def isJavaFile(name: String): Boolean =
     name.endsWith(".java") && !name.endsWith("Test.java")
 
-  private def process(graph: Graph, classes: Iterable[(Ast, String)]) {
-    addClasses(graph, classes)
-    addImports(graph, classes.map(_._1))
-    addPackages(graph)
-    computeLinesOfCode(graph)
+  private def processRevision(
+      graph: Graph,
+      changeDescription: Option[ChangeDescription],
+      classes: Iterable[ParsedFile]) {
+    val clsVertices = classes.map(addClasses(graph, changeDescription))
+    addImports(graph, classes.map(_.ast))
+    addPackages(graph, changeDescription, clsVertices)
   }
 
-  private def addClasses(graph: Graph, classes: Iterable[(Ast, String)]) {
-    for ((ast, source) <- classes) {
-      val (cls, _) = graph.addVertex("class", ast.className)
-      cls.setProperty("source-code", source)
-    }
+  private def addClasses(graph: Graph, changeDescription: Option[ChangeDescription]): (ParsedFile => Vertex) = {
+    parsedFile =>
+      val (cls, newerClass) = graph.addVertex("class", parsedFile.ast.className)
+      (newerClass, changeDescription) match {
+        case (Some(newerClass), Some(diff)) => diff.revisionEdge(graph, cls, newerClass)
+        case (Some(newerClass), None) => logger.error(
+          "No newer class for file: " + parsedFile.fileName + " : " + parsedFile.ast.className)
+        case _ => ()
+      }
+      cls.setProperty("source-code", parsedFile.content)
+      cls
   }
 
   private def addImports(graph: Graph, classes: Iterable[Ast]) {
@@ -88,14 +110,12 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     }
   }
 
-  private def addPackages(graph: Graph) {
-    def classes = graph.headVertices.has("kind", "class").toList.toIterable.asInstanceOf[Iterable[Vertex]]
+  private def addPackages(graph: Graph, changeDescription: Option[ChangeDescription], classes: Iterable[Vertex]) {
     val packageNames = packagesFrom(classes)
-    val packageByName = addPackageVertices(graph, packageNames)
+    val packageByName = addPackageVertices(graph, changeDescription, packageNames)
     addPackageEdges(graph, packageByName)
     addClassPackageEdges(graph, classes, packageByName)
-    addPackageImports(graph)
-    addPageRank(graph)
+    addPageRank(graph) // TODO: make it work only on a single revision
   }
 
   private def packagesFrom(classes: Iterable[Vertex]): Set[String] =
@@ -105,9 +125,15 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
       pkgName <- clsName.split('.').inits.toList.tail.map(_.mkString("."))
     } yield pkgName).toSet
 
-  private def addPackageVertices(graph: Graph, packageNames: Set[String]): Map[String, Vertex] =
+  private def addPackageVertices(
+      graph: Graph, changeDescription: Option[ChangeDescription], packageNames: Set[String]): Map[String, Vertex] =
     (for (pkgName <- packageNames) yield {
-      val (pkg, _) = graph.addVertex("package", pkgName)
+      val (pkg, newerPkg) = graph.addVertex("package", pkgName)
+      (newerPkg, changeDescription) match {
+        case (Some(newerPkg), Some(diff)) => diff.revisionEdge(graph, pkg, newerPkg)
+        case (Some(newerPkg), None) => logger.error("No newer diff for: " + pkg.getProperty("name"))
+        case _ => ()
+      }
       pkgName -> pkg
     }).toMap
 
@@ -127,7 +153,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def addPackageImports(graph: Graph) {
     for {
-      pkg <- graph.headVertices
+      pkg <- graph.vertices
           .has("kind", "class")
           .out("in-package")
           .toList.toSet[Vertex]
@@ -162,7 +188,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def classesNamed(graph: Graph, name: String): Iterable[Vertex] =
     graph
-      .headVertices
+      .currentVertices
       .has("kind", "class")
       .has("name", name)
       .asInstanceOf[GremlinPipeline[Vertex, Vertex]]
@@ -179,7 +205,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def computeLinesOfCode(graph: Graph) {
     graph
-      .headVertices
+      .vertices
       .has("kind", "class")
       .toList foreach {
       case v: Vertex =>
@@ -187,19 +213,16 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
         v.setProperty("metric--lines-of-code", linesOfCode)
     }
     graph
-      .headVertices
+      .vertices
       .has("kind", "package").toList foreach { case pkg: Vertex =>
-      val elems = graph.headVertices.has("name", pkg.getProperty("name"))
+      val elems = new GremlinPipeline()
+        .start(pkg)
         .in("in-package")
         .has("kind", "class")
         .property("metric--lines-of-code")
         .toList.toSeq.asInstanceOf[mutable.Seq[Int]]
-      if (elems.nonEmpty) {
-        val avg = elems.sum.toDouble / elems.size.toDouble
-        pkg.setProperty("metric--lines-of-code", avg)
-      } else {
-        pkg.setProperty("metric--lines-of-code", 0)
-      }
+      val avg = Option(elems).filter(_.size > 0).map(_.sum.toDouble / elems.size.toDouble)
+      pkg.setProperty("metric--lines-of-code", avg.getOrElse(0))
     }
   }
 
@@ -226,3 +249,5 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     }
   }
 }
+
+private case class ParsedFile(ast: Ast, content: String, fileName: String)
