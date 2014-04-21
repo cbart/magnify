@@ -29,11 +29,10 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   override def add(name: String, vArchive: VersionedArchive) {
     val graph = Graph.tinker
     vArchive.extract { (archive, diff) =>
-      removeClassesAndPackagesAddedInNextRevision(graph, diff.removedFiles)
       val classes = classesFrom(archive)
       val changedClasses = classes.filter((parsedFile) => diff.changedFiles.contains(parsedFile.fileName))
       processRevision(graph, diff, changedClasses)
-      graph.commitVersion(diff)
+      graph.commitVersion(diff, classes.map(_.ast.className).toSet)
       Seq() // for monoid to work
     }
     addPageRank(graph) // TODO(biczel): Make it work on single revision layer.
@@ -75,31 +74,6 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   private def isJavaFile(name: String): Boolean =
     name.endsWith(".java") && !name.endsWith("Test.java")
 
-  private def removeClassesAndPackagesAddedInNextRevision(graph: Graph, removedFiles: Set[String]) = {
-    for (fileName <- removedFiles) {
-      val classes = graph.currentVertices.has("file-name", fileName).has("kind", "class").toList
-      for (cls <- classes) {
-        graph.removeFromCurrent("class", cls.getProperty("name"))
-      }
-    }
-    removeEmptyPackages(graph)
-  }
-
-  @tailrec
-  private def removeEmptyPackages(graph: Graph): Unit = {
-    val packages = graph.currentVertices.has("kind", "package").toList
-    val pkgWithClasses = packages.map((pkg) => (pkg, new GremlinPipeline()
-        .start(pkg)
-        .in("in-package")
-        .filter(graph.currentVerticesFilter)
-        .toList))
-    val emptyPkgs = pkgWithClasses.filter(_._2.isEmpty).map(_._1)
-    for (pkg <- emptyPkgs) {
-      graph.removeFromCurrent("package", pkg.getProperty("name"))
-    }
-    if (!emptyPkgs.isEmpty) { removeEmptyPackages(graph) }
-  }
-
   private def processRevision(
       graph: Graph,
       changeDescription: ChangeDescription,
@@ -111,11 +85,8 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def addClasses(graph: Graph, changeDescription: ChangeDescription): (ParsedFile => Vertex) = {
     parsedFile =>
-      val (cls, newerClass) = graph.addVertex("class", parsedFile.ast.className)
-      newerClass match {
-        case (Some(newerClass)) => changeDescription.setProperties(graph.addEdge(cls, "commit", newerClass))
-        case _ => ()
-      }
+      val (cls, commitEdge) = graph.addVertex("class", parsedFile.ast.className)
+      commitEdge.map(changeDescription.setProperties(_))
       cls.setProperty("source-code", parsedFile.content)
       cls.setProperty("file-name", parsedFile.fileName)
       cls
@@ -150,11 +121,8 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   private def addPackageVertices(
       graph: Graph, changeDescription: ChangeDescription, packageNames: Set[String]): Map[String, Vertex] =
     (for (pkgName <- packageNames) yield {
-      val (pkg, newerPkg) = graph.addVertex("package", pkgName)
-      newerPkg match {
-        case Some(newerPkg) => changeDescription.setProperties(graph.addEdge(pkg, "commit", newerPkg))
-        case _ => ()
-      }
+      val (pkg, commitEdge) = graph.addVertex("package", pkgName)
+      commitEdge.map(changeDescription.setProperties(_))
       pkgName -> pkg
     }).toMap
 

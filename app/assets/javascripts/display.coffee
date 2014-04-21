@@ -1,4 +1,7 @@
 $ ->
+  jsonAddress = (jsonAddress) ->
+    jsonAddress + "?rev=" + $("#revision").val()
+
   makeSvg = (jsonAddress) ->
     width = $("#chart").width()
     height = $("#chart").height()
@@ -317,14 +320,14 @@ $ ->
         </a>
       </li>
       """)
-    customSvg("custom.json")
+    customSvg(jsonAddress("custom.json"))
 
   $(".packages-button").on "click", (event) ->
     $(".nav-graph-detail-level").find("*").removeClass("active")
     $(".nav-graph-packages-tab").addClass("active")
     clearSvg()
     $(".gauges").remove()
-    makeSvg("packages.json")
+    makeSvg(jsonAddress("packages.json"))
     $("[rel='tooltip']").tooltip()
 
   $(".package-imports-button").on "click", (event) ->
@@ -332,9 +335,9 @@ $ ->
     $(".nav-graph-package-imports-tab").addClass("active")
     clearSvg()
     $(".gauges").remove()
-    makeSvg("pkgImports.json")
+    makeSvg(jsonAddress("pkgImports.json"))
     $("[rel='tooltip']").tooltip()
 
-  makeSvg("packages.json")
+  makeSvg(jsonAddress("packages.json"))
   $("[rel='tooltip']").tooltip()
 

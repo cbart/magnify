@@ -8,10 +8,10 @@ import scala.collection.JavaConversions._
 /**
  * @author Cezary Bartoszuk (cezary@codilime.com)
  */
-final class PackageImportsGraphView(graph: Graph) extends GraphView {
+final class PackageImportsGraphView(graph: Graph, revision: Option[String]) extends GraphView {
 
   override def vertices: Iterable[Vertex] =
-    graph.revVertices()
+    graph.revVertices(revision)
         .add(packages)
         .toList
 
@@ -19,7 +19,7 @@ final class PackageImportsGraphView(graph: Graph) extends GraphView {
     new PropertyFilterPipe[Vertex, String]("kind", "package", Filter.EQUAL)
 
   override def edges: Iterable[Edge] =
-    graph.edges()
+    graph.edges(revision)
         .add(imports)
         .toList
 

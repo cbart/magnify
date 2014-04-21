@@ -1,12 +1,14 @@
 package magnify.model.graph
 
-import scala.collection.mutable
+import java.lang
+
 import scala.collection.JavaConversions._
 
 import com.tinkerpop.blueprints.{Graph => BlueprintsGraph, _}
 import com.tinkerpop.blueprints.impls.tg.TinkerGraph
 import com.tinkerpop.gremlin.java.GremlinPipeline
 import com.tinkerpop.pipes.PipeFunction
+import com.tinkerpop.pipes.branch.LoopPipe.LoopBundle
 import magnify.model.ChangeDescription
 
 /**
@@ -24,7 +26,6 @@ final class Graph (val blueprintsGraph: BlueprintsGraph) {
 
   private var headVertex: Vertex = _
   private var parentRevVertex: Option[Vertex] = None
-  private val currentVerticesByKey: mutable.Map[VertexKey, Vertex] = mutable.Map[VertexKey, Vertex]()
 
   def revVertices(rev: Option[String] = None): GremlinPipeline[Vertex, Vertex] = {
     val revVertex = rev.flatMap { (revId) =>
@@ -34,12 +35,11 @@ final class Graph (val blueprintsGraph: BlueprintsGraph) {
     new GremlinPipeline().start(revVertex).in("in-revision")
   }
 
-  lazy val currentVerticesFilter: PipeFunction[Vertex, java.lang.Boolean] =
-    new PipeFunction[Vertex, java.lang.Boolean]() {
-      override def compute(argument: Vertex): java.lang.Boolean = currentVerticesByKey.values.contains(argument)
-    }
-
-  def currentVertices: GremlinPipeline[Vertex, Vertex] = vertices.filter(currentVerticesFilter)
+  def currentVertices: GremlinPipeline[Vertex, Vertex] =
+    parentRevVertex.map { revVertex =>
+      new GremlinPipeline().start(revVertex).in("in-revision")
+      .transform(NewVertex)
+    }.getOrElse(vertices)
 
   def vertices: GremlinPipeline[Vertex, Vertex] =
     new GremlinPipeline(blueprintsGraph.getVertices, true)
@@ -49,12 +49,16 @@ final class Graph (val blueprintsGraph: BlueprintsGraph) {
   def edges(rev: Option[String] = None): GremlinPipeline[Edge, Edge] =
     new GremlinPipeline(blueprintsGraph.getEdges, true)
 
-  def addVertex(kind: String, name: String): (Vertex, Option[Vertex]) = {
-    val vertexKey = VertexKey(kind, name)
-    val oldVertex = currentVerticesByKey.get(vertexKey)
+  def getPrevCommitVertex(kind: String, name: String): Option[Vertex] = {
+    val vertex = currentVertices.has("kind", kind).has("name", name).transform(new AsVertex).toList.toSet
+    if (vertex.size == 0) { None } else if (vertex.size == 1) { Some(vertex.head) } else {
+      throw new IllegalStateException() }
+  }
+
+  def addVertex(kind: String, name: String): (Vertex, Option[Edge]) = {
+    val oldVertex: Option[Vertex] = getPrevCommitVertex(kind, name)
     val newVertex = rawAddVertex(kind, name)
-    currentVerticesByKey.put(vertexKey, newVertex)
-    (newVertex, oldVertex)
+    (newVertex, oldVertex.map(addEdge(newVertex, "commit", _)))
   }
 
   private def rawAddVertex(kind: String, name: String) = {
@@ -64,23 +68,54 @@ final class Graph (val blueprintsGraph: BlueprintsGraph) {
     newVertex
   }
 
-  def removeFromCurrent(kind: String, name: String): Unit = currentVerticesByKey -= VertexKey(kind, name)
-
   def addEdge(from: Vertex, label: String, to: Vertex): Edge =
     blueprintsGraph.addEdge(null, from, to, label)
 
-  def commitVersion(changeDescription: ChangeDescription): Unit = {
+  def commitVersion(changeDescription: ChangeDescription, classes: Set[String]): Unit = {
     val revVertex = rawAddVertex("commit", changeDescription.revision)
     changeDescription.setProperties(revVertex)
     headVertex = parentRevVertex.map { parentRev =>
       this.addEdge(revVertex, "commit", parentRev)
       headVertex
     }.getOrElse(revVertex)
-    for (inRevVertex <- currentVerticesByKey.values) {
+
+    val currentClasses = currentVertices
+        .has("kind", "class")
+        .filter(HasInFilter("name", classes))
+        .filter(NotFilter(HasInFilter("file-name", changeDescription.removedFiles)))
+        .transform(new AsVertex())
+    val classVertices = currentClasses.toList
+    val currentPackages =
+      new GremlinPipeline(classVertices, true).out("in-package").loop(1, TrueFilter, TrueFilter).dedup()
+    val pkgVertices = currentPackages.toList
+    for (inRevVertex <- classVertices ++ pkgVertices) {
       this.addEdge(inRevVertex, "in-revision", revVertex)
     }
     parentRevVertex = Some(revVertex)
   }
 
-  private case class VertexKey(kind: String, name: String)
+  private case class HasInFilter[T <: Element](property: String, values: Set[String])
+      extends PipeFunction[T, lang.Boolean] {
+    override def compute(element: T): lang.Boolean = values.contains(element.getProperty(property))
+  }
+
+  private case class NotFilter[T <: Element](filter: PipeFunction[T, lang.Boolean])
+      extends PipeFunction[T, lang.Boolean] {
+    override def compute(argument: T): lang.Boolean = !filter.compute(argument)
+  }
+
+  private object TrueFilter extends PipeFunction[LoopBundle[Vertex], lang.Boolean] {
+    override def compute(argument: LoopBundle[Vertex]): lang.Boolean = true
+  }
+
+  private object NewVertex extends PipeFunction[Vertex, Vertex] {
+    override def compute(v: Vertex): Vertex = {
+      val it = v.getVertices(Direction.OUT, "commit").iterator()
+      if (it.hasNext) { it.next() } else { v }
+    }
+  }
+
+  private class AsVertex[T <: Element] extends PipeFunction[T, Vertex] {
+    override def compute(argument: T): Vertex = argument.asInstanceOf[Vertex]
+  }
 }

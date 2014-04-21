@@ -35,19 +35,19 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
 
   def showCustomJson(name: String) = Action { implicit request =>
     withGraph(name) { graph =>
-      Ok(json(new CustomGraphView(graph)))
+      Ok(json(new CustomGraphView(graph, request.getQueryString("rev").filter(_.trim.nonEmpty))))
     }
   }
 
   def showPackagesJson(name: String) = Action { implicit request =>
     withGraph(name) { graph =>
-      Ok(json(new PackagesGraphView(graph)))
+      Ok(json(new PackagesGraphView(graph, request.getQueryString("rev").filter(_.trim.nonEmpty))))
     }
   }
 
   def showPkgImportsJson(name: String) = Action { implicit request =>
     withGraph(name) { graph =>
-      Ok(json(new ClassImportsGraphView(graph)))
+      Ok(json(new ClassImportsGraphView(graph, request.getQueryString("rev").filter(_.trim.nonEmpty))))
     }
   }
 

@@ -6,10 +6,10 @@ import com.tinkerpop.blueprints.{Edge, Vertex}
 import com.tinkerpop.gremlin.pipes.filter.{LabelFilterPipe, PropertyFilterPipe}
 import com.tinkerpop.pipes.filter.FilterPipe.Filter
 
-final class ClassImportsGraphView(graph: Graph) extends GraphView {
+final class ClassImportsGraphView(graph: Graph, revision: Option[String]) extends GraphView {
 
   override def vertices: Iterable[Vertex] =
-    graph.revVertices()
+    graph.revVertices(revision)
         .add(classes)
         .toList
 
@@ -17,7 +17,7 @@ final class ClassImportsGraphView(graph: Graph) extends GraphView {
     new PropertyFilterPipe[Vertex, String]("kind", "class", Filter.EQUAL)
 
   override def edges: Iterable[Edge] =
-    graph.edges()
+    graph.edges(revision)
         .add(imports)
         .toList
 

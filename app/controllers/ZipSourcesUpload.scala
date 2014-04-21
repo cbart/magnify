@@ -54,6 +54,8 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
   def uploadGit = Action(parse.multipartFormData) { implicit request =>
     for (path <- gitPath; name <- projectName) Future {
       sources.add(name, Git(path, gitBranch))
+    }.recover {
+      case t: Throwable => t.printStackTrace()
     }
     Redirect(routes.ZipSourcesUpload.form()).flashing(progress)
   }
