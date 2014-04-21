@@ -2,6 +2,7 @@ package magnify.features
 
 import java.io._
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 import scala.io.Source
@@ -28,16 +29,14 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   override def add(name: String, vArchive: VersionedArchive) {
     val graph = Graph.tinker
     vArchive.extract { (archive, diff) =>
+      removeClassesAndPackagesAddedInNextRevision(graph, diff.removedFiles)
       val classes = classesFrom(archive)
-      val changedFiles = diff.map(_.changedFiles.keySet.filter(_.isDefined).map(_.get))
-          .getOrElse(classes.map(_.fileName).toSet)
-      val changedClasses = classes.filter { parsedFile =>
-        changedFiles.contains(parsedFile.fileName)
-      }
+      val changedClasses = classes.filter((parsedFile) => diff.changedFiles.contains(parsedFile.fileName))
       processRevision(graph, diff, changedClasses)
       graph.commitVersion(diff)
       Seq() // for monoid to work
     }
+    addPageRank(graph) // TODO(biczel): Make it work on single revision layer.
     addPackageImports(graph)
     computeLinesOfCode(graph)
     graphs += name -> graph
@@ -76,25 +75,49 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   private def isJavaFile(name: String): Boolean =
     name.endsWith(".java") && !name.endsWith("Test.java")
 
+  private def removeClassesAndPackagesAddedInNextRevision(graph: Graph, removedFiles: Set[String]) = {
+    for (fileName <- removedFiles) {
+      val classes = graph.currentVertices.has("file-name", fileName).has("kind", "class").toList
+      for (cls <- classes) {
+        graph.removeFromCurrent("class", cls.getProperty("name"))
+      }
+    }
+    removeEmptyPackages(graph)
+  }
+
+  @tailrec
+  private def removeEmptyPackages(graph: Graph): Unit = {
+    val packages = graph.currentVertices.has("kind", "package").toList
+    val pkgWithClasses = packages.map((pkg) => (pkg, new GremlinPipeline()
+        .start(pkg)
+        .in("in-package")
+        .filter(graph.currentVerticesFilter)
+        .toList))
+    val emptyPkgs = pkgWithClasses.filter(_._2.isEmpty).map(_._1)
+    for (pkg <- emptyPkgs) {
+      graph.removeFromCurrent("package", pkg.getProperty("name"))
+    }
+    if (!emptyPkgs.isEmpty) { removeEmptyPackages(graph) }
+  }
+
   private def processRevision(
       graph: Graph,
-      changeDescription: Option[ChangeDescription],
+      changeDescription: ChangeDescription,
       classes: Iterable[ParsedFile]) {
     val clsVertices = classes.map(addClasses(graph, changeDescription))
     addImports(graph, classes.map(_.ast))
     addPackages(graph, changeDescription, clsVertices)
   }
 
-  private def addClasses(graph: Graph, changeDescription: Option[ChangeDescription]): (ParsedFile => Vertex) = {
+  private def addClasses(graph: Graph, changeDescription: ChangeDescription): (ParsedFile => Vertex) = {
     parsedFile =>
       val (cls, newerClass) = graph.addVertex("class", parsedFile.ast.className)
-      (newerClass, changeDescription) match {
-        case (Some(newerClass), Some(diff)) => diff.revisionEdge(graph, cls, newerClass)
-        case (Some(newerClass), None) => logger.error(
-          "No newer class for file: " + parsedFile.fileName + " : " + parsedFile.ast.className)
+      newerClass match {
+        case (Some(newerClass)) => changeDescription.setProperties(graph.addEdge(cls, "commit", newerClass))
         case _ => ()
       }
       cls.setProperty("source-code", parsedFile.content)
+      cls.setProperty("file-name", parsedFile.fileName)
       cls
   }
 
@@ -110,12 +133,11 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     }
   }
 
-  private def addPackages(graph: Graph, changeDescription: Option[ChangeDescription], classes: Iterable[Vertex]) {
+  private def addPackages(graph: Graph, changeDescription: ChangeDescription, classes: Iterable[Vertex]) {
     val packageNames = packagesFrom(classes)
     val packageByName = addPackageVertices(graph, changeDescription, packageNames)
     addPackageEdges(graph, packageByName)
     addClassPackageEdges(graph, classes, packageByName)
-    addPageRank(graph) // TODO: make it work only on a single revision
   }
 
   private def packagesFrom(classes: Iterable[Vertex]): Set[String] =
@@ -126,12 +148,11 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     } yield pkgName).toSet
 
   private def addPackageVertices(
-      graph: Graph, changeDescription: Option[ChangeDescription], packageNames: Set[String]): Map[String, Vertex] =
+      graph: Graph, changeDescription: ChangeDescription, packageNames: Set[String]): Map[String, Vertex] =
     (for (pkgName <- packageNames) yield {
       val (pkg, newerPkg) = graph.addVertex("package", pkgName)
-      (newerPkg, changeDescription) match {
-        case (Some(newerPkg), Some(diff)) => diff.revisionEdge(graph, pkg, newerPkg)
-        case (Some(newerPkg), None) => logger.error("No newer diff for: " + pkg.getProperty("name"))
+      newerPkg match {
+        case Some(newerPkg) => changeDescription.setProperties(graph.addEdge(pkg, "commit", newerPkg))
         case _ => ()
       }
       pkgName -> pkg
@@ -240,8 +261,8 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
       val calls = runtime.groupBy {case (a, b, _) => (a, b)}.mapValues(s => s.map(_._3).sum)
       for {
         ((fromPackage, toPackage), count) <- calls
-        from <- graph.headVertices.has("kind", "package").has("name", fromPackage).toList
-        to <- graph.headVertices.has("kind", "package").has("name", toPackage).toList
+        from <- graph.revVertices().has("kind", "package").has("name", fromPackage).toList
+        to <- graph.revVertices().has("kind", "package").has("name", toPackage).toList
       } {
         val e = graph.addEdge(from.asInstanceOf[Vertex], "calls", to.asInstanceOf[Vertex])
         e.setProperty("count", count.toString)

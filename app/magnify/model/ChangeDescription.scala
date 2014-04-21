@@ -1,7 +1,7 @@
 package magnify.model
 
+import com.tinkerpop.blueprints.{Edge, Element, Vertex}
 import magnify.model.graph.Graph
-import com.tinkerpop.blueprints.{Edge, Vertex}
 
 final case class ChangeDescription(
     revision: String,
@@ -9,14 +9,14 @@ final case class ChangeDescription(
     author: String,
     committer: String,
     time: Int,
-    changedFiles: Map[Option[String], Option[String]]) {
-  def revisionEdge(graph: Graph, current: Vertex, newer: Vertex): Edge = {
-    val edge = graph.addEdge(current, "commit", newer)
-    edge.setProperty("rev", revision)
-    edge.setProperty("desc", description)
-    edge.setProperty("author", author)
-    edge.setProperty("committer", committer)
-    edge.setProperty("time", time)
-    edge
+    changedFiles: Set[String],
+    removedFiles: Set[String]) {
+
+  def setProperties(element: Element) = {
+    element.setProperty("rev", revision)
+    element.setProperty("desc", description)
+    element.setProperty("author", author)
+    element.setProperty("committer", committer)
+    element.setProperty("time", time)
   }
 }

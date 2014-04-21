@@ -11,7 +11,7 @@ import scala.collection.JavaConversions._
 final class PackageImportsGraphView(graph: Graph) extends GraphView {
 
   override def vertices: Iterable[Vertex] =
-    graph.headVertices
+    graph.revVertices()
         .add(packages)
         .toList
 
@@ -19,7 +19,7 @@ final class PackageImportsGraphView(graph: Graph) extends GraphView {
     new PropertyFilterPipe[Vertex, String]("kind", "package", Filter.EQUAL)
 
   override def edges: Iterable[Edge] =
-    graph.edges
+    graph.edges()
         .add(imports)
         .toList
 

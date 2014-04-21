@@ -9,7 +9,7 @@ import com.tinkerpop.pipes.filter.FilterPipe.Filter
 final class ClassImportsGraphView(graph: Graph) extends GraphView {
 
   override def vertices: Iterable[Vertex] =
-    graph.headVertices
+    graph.revVertices()
         .add(classes)
         .toList
 
@@ -17,7 +17,7 @@ final class ClassImportsGraphView(graph: Graph) extends GraphView {
     new PropertyFilterPipe[Vertex, String]("kind", "class", Filter.EQUAL)
 
   override def edges: Iterable[Edge] =
-    graph.edges
+    graph.edges()
         .add(imports)
         .toList
 

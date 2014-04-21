@@ -3,6 +3,7 @@ package magnify.model
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, InputStream}
 
 import scala.annotation.tailrec
+import scala.collection.mutable
 import scala.collection.JavaConversions._
 
 import org.eclipse.jgit.diff.{DiffFormatter, RawTextComparator}
@@ -31,34 +32,45 @@ private[this] final class Git(repo: Repository, branch: String) extends Versione
   val df = new DiffFormatter(DisabledOutputStream.INSTANCE)
   df.setRepository(repo)
   df.setDiffComparator(RawTextComparator.DEFAULT)
-  df.setDetectRenames(true)
+  df.setDetectRenames(false)
 
-  override def extract[A: Monoid](f: (Archive, Option[ChangeDescription]) => A): A = {
+  override def extract[A: Monoid](f: (Archive, ChangeDescription) => A): A = {
     val monoid = implicitly[Monoid[A]]
-    fold(monoid.zero, revWalk, None, (acc: A, archive: Archive, changeDesc: Option[ChangeDescription]) =>
+    fold(monoid.zero, revWalk, None, (acc: A, archive: Archive, changeDesc: ChangeDescription) =>
       monoid.append(acc, f(archive, changeDesc)))
   }
 
   @tailrec
   private def fold[A](
-      acc: A, revWalk: RevWalk, parent: Option[RevCommit],
-      transform: (A, Archive, Option[ChangeDescription]) => A): A = {
+      acc: A, revWalk: RevWalk, oParentCommit: Option[RevCommit],
+      transform: (A, Archive, ChangeDescription) => A): A = {
     Option(revWalk.next()) match {
       case Some(revCommit) => {
         logger.debug("Processing commit: " + revCommit)
-        val changeDesc = parent.map { parentCommit =>
+        val (changed, removed) = oParentCommit.map { parentCommit =>
           val diffs = df.scan(revCommit.getTree, parentCommit.getTree).toSeq
-          ChangeDescription(
-            reader.abbreviate(revCommit.getId).name,
-            revCommit.getFullMessage,
-            revCommit.getAuthorIdent.toExternalString,
-            revCommit.getCommitterIdent.toExternalString,
-            revCommit.getCommitTime,
-            diffs.map((diff) =>
-              (Option(diff.getOldPath).filter(_ ne "/dev/null") -> Option(diff.getNewPath).filter(_ ne "/dev/null"))
-            ).toMap)
+          (diffs.map((diff) => diff.getOldPath).filter(_ ne "/dev/null").toSet,
+           diffs.filter(_.getOldPath eq "/dev/null").map(_.getNewPath).toSet)
+        }.getOrElse {
+          val tree = revCommit.getTree()
+          val treeWalk = new TreeWalk(repo)
+          treeWalk.addTree(tree)
+          treeWalk.setRecursive(true)
+          val files = mutable.ListBuffer[String]()
+          while (treeWalk.next()) {
+            files += treeWalk.getPathString
+          }
+          (files.toSet, Set[String]())
         }
-        fold(transform(acc, new GitCommit(repo, revCommit, parent), changeDesc), revWalk, Some(revCommit), transform)
+        val changeDesc = ChangeDescription(
+          reader.abbreviate(revCommit.getId).name,
+          revCommit.getFullMessage,
+          revCommit.getAuthorIdent.toExternalString,
+          revCommit.getCommitterIdent.toExternalString,
+          revCommit.getCommitTime,
+          changed,
+          removed)
+        fold(transform(acc, new GitCommit(repo, revCommit), changeDesc), revWalk, Some(revCommit), transform)
       }
       case None => acc
     }
@@ -67,8 +79,7 @@ private[this] final class Git(repo: Repository, branch: String) extends Versione
 
 private[this] final class GitCommit(
     repo: Repository,
-    commit: RevCommit,
-    parent: Option[RevCommit])
+    commit: RevCommit)
   extends Archive {
 
   private val logger = Logger(classOf[GitCommit].getSimpleName)
