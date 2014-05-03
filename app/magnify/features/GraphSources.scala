@@ -2,7 +2,6 @@ package magnify.features
 
 import java.io._
 
-import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 import scala.io.Source
@@ -26,18 +25,44 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   private val graphs = mutable.Map[String, Graph]()
   private val importedGraphs = mutable.Map[String, Json]()
 
+  class ClassExtractor {
+    var currentClasses = Map[String, Set[String]]() // file name -> class name
+    var changedFiles = Set[String]()
+
+    def newCommit(diff: ChangeDescription): Unit = {
+      currentClasses = currentClasses.filterKeys((fileName) => !diff.removedFiles.contains(diff))
+      changedFiles = diff.changedFiles
+    }
+
+    def shouldParse(fileName: String): Boolean =
+      changedFiles.contains(fileName) || !currentClasses.containsKey(fileName)
+
+    def parsedFile(fileName: String, classes: Seq[ParsedFile]) =
+      currentClasses = currentClasses.updated(fileName, classes.map(_.ast.className).toSet)
+
+    def classes: Set[String] = currentClasses.values.toSet.flatten
+  }
+
   override def add(name: String, vArchive: VersionedArchive) {
     val graph = Graph.tinker
+    val classExtractor = new ClassExtractor()
+    logger.info("Revision analysis starts: " + name + " : " + System.nanoTime())
     vArchive.extract { (archive, diff) =>
-      val classes = classesFrom(archive)
-      val changedClasses = classes.filter((parsedFile) => diff.changedFiles.contains(parsedFile.fileName))
-      processRevision(graph, diff, changedClasses)
-      graph.commitVersion(diff, classes.map(_.ast.className).toSet)
+      logger.debug("processing commit @ " + name + " : " + diff.revision + " : " + System.nanoTime())
+      classExtractor.newCommit(diff)
+      val classes = classesFrom(archive, classExtractor)
+      processRevision(graph, diff, classes)
+      graph.commitVersion(diff, classExtractor.classes)
       Seq() // for monoid to work
     }
-    addPageRank(graph) // TODO(biczel): Make it work on single revision layer.
+    logger.info("Revision analysis finished: " + name + " : " + System.nanoTime())
+    // addPageRank(graph) // TODO(biczel): Make it work on single revision layer.
+    logger.info("Add package Imports starts: " + name + " : " + System.nanoTime())
     addPackageImports(graph)
+    logger.info("Add package Imports finished: " + name + " : " + System.nanoTime())
+    logger.info("Compute LOC starts: " + name + " : " + System.nanoTime())
     computeLinesOfCode(graph)
+    logger.info("Compute LOC finished: " + name + " : " + System.nanoTime())
     graphs += name -> graph
   }
 
@@ -45,12 +70,14 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     importedGraphs += name -> graph
   }
 
-  private def classesFrom(file: Archive): Seq[ParsedFile] = file.extract {
+  private def classesFrom(file: Archive, classExtractor: ClassExtractor): Seq[ParsedFile] = file.extract {
     (fileName, content) =>
-      if (isJavaFile(fileName) ) {
+      if (isJavaFile(fileName) && classExtractor.shouldParse(fileName)) {
         val stringContent = inputStreamToString(content)
-        for (ast <- parse(new ByteArrayInputStream(stringContent.getBytes("UTF-8")))) yield (ParsedFile(
-            ast, stringContent, fileName))
+        val parsedFiles = for (ast <- parse(new ByteArrayInputStream(stringContent.getBytes("UTF-8")))) yield (
+            ParsedFile(ast, stringContent, fileName))
+        classExtractor.parsedFile(fileName, parsedFiles)
+        parsedFiles
       } else {
         Seq()
       }

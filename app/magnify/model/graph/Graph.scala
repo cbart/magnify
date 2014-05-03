@@ -50,9 +50,9 @@ final class Graph (val blueprintsGraph: BlueprintsGraph) {
     new GremlinPipeline(blueprintsGraph.getEdges, true)
 
   def getPrevCommitVertex(kind: String, name: String): Option[Vertex] = {
-    val vertex = currentVertices.has("kind", kind).has("name", name).transform(new AsVertex).toList.toSet
-    if (vertex.size == 0) { None } else if (vertex.size == 1) { Some(vertex.head) } else {
-      throw new IllegalStateException() }
+    val vertex = currentVertices.has("kind", kind).has("name", name).transform(new AsVertex).dedup().toList.toSet
+    require(vertex.size <= 1, vertex.map(_.toString).mkString(", "))
+    vertex.headOption
   }
 
   def addVertex(kind: String, name: String): (Vertex, Option[Edge]) = {

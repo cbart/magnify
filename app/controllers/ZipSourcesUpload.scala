@@ -11,6 +11,7 @@ import magnify.model.{Git, Json, Zip}
 import magnify.modules.inject
 import play.api.libs.Files
 import play.api.mvc._
+import play.api.Logger
 
 /**
  * @author Cezary Bartoszuk (cezary@codilime.com)
@@ -19,6 +20,8 @@ object ZipSourcesUpload extends ZipSourcesUpload(inject[Sources])
 
 sealed class ZipSourcesUpload (protected override val sources: Sources)
     extends Controller with ProjectList {
+
+  private val logger = Logger(classOf[ZipSourcesUpload].getSimpleName)
 
   private type MultipartRequest = Request[MultipartFormData[Files.TemporaryFile]]
 
@@ -55,7 +58,7 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
     for (path <- gitPath; name <- projectName) Future {
       sources.add(name, Git(path, gitBranch))
     }.recover {
-      case t: Throwable => t.printStackTrace()
+      case t: Throwable => logger.error("Error processing project: " + name, t)
     }
     Redirect(routes.ZipSourcesUpload.form()).flashing(progress)
   }
