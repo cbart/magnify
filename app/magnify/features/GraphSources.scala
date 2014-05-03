@@ -112,10 +112,10 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
 
   private def addClasses(graph: Graph, changeDescription: ChangeDescription): (ParsedFile => Vertex) = {
     parsedFile =>
-      val (cls, commitEdge) = graph.addVertex("class", parsedFile.ast.className)
+      val (cls, commitEdge) = graph.addVertex(
+        "class", parsedFile.ast.className, Seq("file-name" -> parsedFile.fileName).toMap)
       commitEdge.map(changeDescription.setProperties(_))
       cls.setProperty("source-code", parsedFile.content)
-      cls.setProperty("file-name", parsedFile.fileName)
       cls
   }
 

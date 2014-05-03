@@ -49,15 +49,19 @@ final class Graph (val blueprintsGraph: BlueprintsGraph) {
   def edges(rev: Option[String] = None): GremlinPipeline[Edge, Edge] =
     new GremlinPipeline(blueprintsGraph.getEdges, true)
 
-  def getPrevCommitVertex(kind: String, name: String): Option[Vertex] = {
-    val vertex = currentVertices.has("kind", kind).has("name", name).transform(new AsVertex).dedup().toList.toSet
-    require(vertex.size <= 1, vertex.map(_.toString).mkString(", "))
+  def getPrevCommitVertex(kind: String, name: String, props: Map[String, String]): Option[Vertex] = {
+    var pipeline = currentVertices.has("kind", kind).has("name", name)
+    props.keys.foreach((prop) => pipeline = pipeline.has(prop, props(prop)))
+    val vertex = pipeline.transform(new AsVertex).dedup().toList.toSet
+    require(vertex.size <= 1, parentRevVertex.map(_.getProperty("rev")) + " : " + vertex.map((v) => "V[" + Seq(v
+        .getProperty("name"), v.getProperty("kind"), v.getId.toString).mkString(", ") + "]").mkString(", "))
     vertex.headOption
   }
 
-  def addVertex(kind: String, name: String): (Vertex, Option[Edge]) = {
-    val oldVertex: Option[Vertex] = getPrevCommitVertex(kind, name)
+  def addVertex(kind: String, name: String, props: Map[String, String] = Map()): (Vertex, Option[Edge]) = {
+    val oldVertex: Option[Vertex] = getPrevCommitVertex(kind, name, props)
     val newVertex = rawAddVertex(kind, name)
+    props.keys.foreach((prop) => newVertex.setProperty(prop, props(prop)))
     (newVertex, oldVertex.map(addEdge(newVertex, "commit", _)))
   }
 
