@@ -48,7 +48,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     val classExtractor = new ClassExtractor()
     logger.info("Revision analysis starts: " + name + " : " + System.nanoTime())
     vArchive.extract { (archive, diff) =>
-      logger.debug("processing commit @ " + name + " : " + diff.revision + " : " + System.nanoTime())
+      logger.info("processing commit @ " + name + " : " + diff.revision + " : " + System.nanoTime())
       classExtractor.newCommit(diff)
       val classes = classesFrom(archive, classExtractor)
       processRevision(graph, diff, classes)
