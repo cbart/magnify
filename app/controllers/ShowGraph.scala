@@ -51,6 +51,18 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
     }
   }
 
+  def committers(name: String) = Action { implicit request =>
+    withGraph(name) { graph =>
+      Ok(toJson(Committers(request.getQueryString("rev").filter(_.trim.nonEmpty), graph)))
+    }
+  }
+
+  def revisions(name: String) = Action { implicit request =>
+    withGraph(name) { graph =>
+      Ok(toJson(Revisions(request.getQueryString("rev").filter(_.trim.nonEmpty), graph)))
+    }
+  }
+
   private def withGraph(name: String)(action: Graph => Result)(implicit request: Request[AnyContent]): Result =
     sources.get(name) match {
       case Some(graph) => action(graph)
@@ -78,7 +90,7 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
     for (vertex <- vertices.toSeq) yield {
       val name = vertex.getProperty("name").toString
       val kind = vertex.getProperty("kind").toString
-      val pageRank = vertex.getProperty("page-rank").toString
+      val pageRank = Option(vertex.getProperty[String]("page-rank")).getOrElse("")
       Map("name" -> name, "kind" -> kind, "page-rank" -> pageRank) ++ property(vertex, "metric--lines-of-code")
     }
 

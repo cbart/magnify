@@ -27,12 +27,21 @@ final class Graph (val blueprintsGraph: BlueprintsGraph) {
   private var headVertex: Vertex = _
   private var parentRevVertex: Option[Vertex] = None
 
-  def revVertices(rev: Option[String] = None): GremlinPipeline[Vertex, Vertex] = {
-    val revVertex = rev.flatMap { (revId) =>
+  private def revVertex(rev: Option[String]): Vertex = {
+    rev.flatMap { (revId) =>
       val commitVertices = vertices.has("kind", "commit").has("name", revId).toList
       if (commitVertices.size() == 1) { Some(commitVertices.get(0).asInstanceOf[Vertex]) } else { None }
     }.getOrElse(headVertex)
-    new GremlinPipeline().start(revVertex).in("in-revision")
+  }
+
+  def revVertices(rev: Option[String] = None): GremlinPipeline[Vertex, Vertex] = {
+    new GremlinPipeline().start(revVertex(rev)).in("in-revision")
+  }
+
+  def commitsOlderThan(rev: Option[String] = None): Seq[Vertex] = {
+    val head = revVertex(rev)
+    val older = new GremlinPipeline().start(head).in("commit").loop(1, TrueFilter, TrueFilter).dedup().toList.toSeq
+    Seq(head) ++ older
   }
 
   def currentVertices: GremlinPipeline[Vertex, Vertex] =

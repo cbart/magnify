@@ -57,7 +57,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     }
     logger.info("Revision analysis finished: " + name + " : " + System.nanoTime())
     logger.info("PageRank starts: " + name + " : " + System.nanoTime())
-    addPageRank(graph) // TODO(biczel): Make it work on single revision layer.
+    // addPageRank(graph) // TODO(biczel): Make it work on single revision layer.
     logger.info("PageRank finished: " + name + " : " + System.nanoTime())
     logger.info("Add package Imports starts: " + name + " : " + System.nanoTime())
     addPackageImports(graph)
