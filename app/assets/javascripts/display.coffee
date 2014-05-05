@@ -1,6 +1,6 @@
 $ ->
   jsonAddress = (jsonAddress) ->
-    jsonAddress + "?rev=" + $("#revision").val()
+    jsonAddress + "?rev=" + getActiveSha();
 
   makeSvg = (jsonAddress) ->
     width = $("#chart").width()

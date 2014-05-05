@@ -1,12 +1,13 @@
 @(name: String)(implicit flash: Flash, projects: Projects)
 
 @head = {
+  <script src="@routes.Assets.at("javascripts/revisions.js")"></script>
+  <script src="@routes.Assets.at("javascripts/authors.js")"></script>
   <script src="@routes.Assets.at("javascripts/d3.v2.js")"></script>
   <script src="@routes.Assets.at("javascripts/display.js")"></script>
 }
 
 @main(name, head, projectName=name) {
-  <input type="text" name="revision" id="revision">
   <ul class="nav nav-tabs nav-graph-detail-level">
     <li class="disabled">
       <a href="#">@name</a>
@@ -43,6 +44,10 @@
       <a href="@routes.ShowGraph.showCustomJson(name)">Download graph JSON <i class="icon-file"></i></a>
     </li>
   </ul>
+  <div id="revisions">
+  </div>
+  <div id="authors">
+  </div>
   <div id="chart">
   </div>
 }
