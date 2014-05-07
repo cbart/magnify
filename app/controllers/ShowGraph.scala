@@ -47,6 +47,12 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
 
   def showPkgImportsJson(name: String) = Action { implicit request =>
     withGraph(name) { graph =>
+      Ok(json(new PackageImportsGraphView(graph, request.getQueryString("rev").filter(_.trim.nonEmpty))))
+    }
+  }
+
+  def showClsImportsJson(name: String) = Action { implicit request =>
+    withGraph(name) { graph =>
       Ok(json(new ClassImportsGraphView(graph, request.getQueryString("rev").filter(_.trim.nonEmpty))))
     }
   }

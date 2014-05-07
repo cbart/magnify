@@ -7,6 +7,7 @@ GET         /project/:name/graph.html                         controllers.ShowGr
 GET         /project/:name/custom.json                        controllers.ShowGraph.showCustomJson(name: String)
 GET         /project/:name/packages.json                      controllers.ShowGraph.showPackagesJson(name: String)
 GET         /project/:name/pkgImports.json                    controllers.ShowGraph.showPkgImportsJson(name: String)
+GET         /project/:name/clsImports.json                    controllers.ShowGraph.showClsImportsJson(name: String)
 GET         /project/:name/committers.json                    controllers.ShowGraph.committers(name: String)
 GET         /project/:name/revisions.json                     controllers.ShowGraph.revisions(name: String)
 GET         /project/:name/upload-call-count.html             controllers.UploadCallCount.form(name: String)

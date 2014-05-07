@@ -18,6 +18,6 @@ object Revisions {
       val committer = Committers.getName(vrtx.getProperty[String]("committer"))
       val time = format.format(new Date(vrtx.getProperty[Integer]("time") * 1000L))
       Map("id" -> rev, "description" -> desc, "author" -> author, "committer" -> committer, "time" -> time)
-    }.reverse
+    }
   }
 }

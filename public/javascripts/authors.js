@@ -11,12 +11,15 @@ var renderAuthors = function() {
     }
     setActiveAuthors();
   });
+  $("#revisions").on("revchange", function authorsRevChangeHandler() {
+    setActiveAuthors();
+  });
 };
 
 var createAuthorElem = function(authorMap) {
   var name = authorMap['name'];
   var id = getAuthorId(name);
-  return $('<div/>').attr("id", "author_" + id).addClass("author").text(name);
+  return $('<li/>').attr("id", "author_" + id).addClass("author").text(name);
 };
 
 var setActiveAuthors = function() {

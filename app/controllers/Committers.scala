@@ -13,7 +13,7 @@ object Committers {
   }
 
   def getName(authorWithTime: String): String = {
-    val endEmailIndex = authorWithTime.lastIndexOf('>')
-    authorWithTime.substring(0, endEmailIndex + 1)
+    val endEmailIndex = authorWithTime.lastIndexOf('<')
+    authorWithTime.substring(0, endEmailIndex - 1)
   }
 }
