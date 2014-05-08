@@ -94,7 +94,7 @@ private[this] final class GitCommit(
 
   private val mutableObjectId = new MutableObjectId()
   
-  override def extract[A: Monoid](f: (String, Option[String], InputStream) => A): A = {
+  override def extract[A: Monoid](f: (String, Option[String], () => InputStream) => A): A = {
     val tree = commit.getTree()
     logger.debug("Having tree: " + tree)
     val treeWalk = new TreeWalk(repo)
@@ -102,7 +102,7 @@ private[this] final class GitCommit(
     treeWalk.setRecursive(true)
     val monoid = implicitly[Monoid[A]]
     try {
-      fold(monoid.zero, treeWalk, (acc: A, name: String, oObjectId: Option[String], content: InputStream) =>
+      fold(monoid.zero, treeWalk, (acc: A, name: String, oObjectId: Option[String], content: () => InputStream) =>
         monoid.append(acc, f(name, oObjectId, content)))
     } finally {
       repo.close()
@@ -110,12 +110,18 @@ private[this] final class GitCommit(
   }
 
   @tailrec
-  private def fold[A](acc: A, walk: TreeWalk, transform: (A, String, Option[String], InputStream) => A): A = {
+  private def fold[A](acc: A, walk: TreeWalk, transform: (A, String, Option[String], () => InputStream) => A): A = {
     if (walk.next()) {
-      walk.getObjectId(mutableObjectId, 0)
-      val loader = repo.open(mutableObjectId)
+      val contentFn: () => InputStream = () => {
+        walk.getObjectId(mutableObjectId, 0)
+        val loader = repo.open(mutableObjectId)
+        new ByteArrayInputStream(loader.getCachedBytes)
+      }
       fold(
-        transform(acc, walk.getPathString, Some(mutableObjectId.name), new ByteArrayInputStream(loader.getCachedBytes)),
+        transform(
+          acc, walk.getPathString,
+          Some(mutableObjectId.name),
+          contentFn),
         walk, transform)
     } else {
       acc

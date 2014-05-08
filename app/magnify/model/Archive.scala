@@ -8,5 +8,5 @@ import scalaz.Monoid
  */
 trait Archive {
 
-  def extract[A : Monoid](f: (String, Option[String], InputStream) => A): A
+  def extract[A : Monoid](f: (String, Option[String], () => InputStream) => A): A
 }

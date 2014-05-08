@@ -75,7 +75,7 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
   private def classesFrom(file: Archive, classExtractor: ClassExtractor): Seq[ParsedFile] =
     file.extract { (fileName, oFileId, content) =>
       if (isJavaFile(fileName) && classExtractor.shouldParse(fileName)) {
-        val stringContent = inputStreamToString(content)
+        val stringContent = inputStreamToString(content())
         val parsedFiles = for (ast <- parse(new ByteArrayInputStream(stringContent.getBytes("UTF-8")))) yield (
             ParsedFile(ast, stringContent, fileName, oFileId))
         classExtractor.parsedFile(fileName, parsedFiles)
