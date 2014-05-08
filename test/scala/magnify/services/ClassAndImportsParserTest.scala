@@ -1,18 +1,18 @@
 package magnify.services
 
 import java.io.ByteArrayInputStream
+
 import magnify.features.Parser
 import magnify.model.Ast
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 @RunWith(classOf[JUnitRunner])
-final class ClassAndImportsParserTest extends FunSuite with ShouldMatchers {
+final class ClassAndImportsParserTest extends FunSuite with Matchers {
   val parser: Parser = new ClassAndImportsParser()
 
   test("should parse simple class with no imports yielding fully qualified name") {
@@ -23,7 +23,7 @@ final class ClassAndImportsParserTest extends FunSuite with ShouldMatchers {
         |class Example {
         |};
       """.stripMargin
-    parse(source) should equal(Seq(Ast(Seq(), "magnify.mock.classes.Example")))
+    parse(source) should equal(Seq(Ast("magnify.mock.classes.Example", Set(), Set("magnify.mock.classes"), Set())))
   }
 
   test("should parse two classes with singleton package") {
@@ -36,48 +36,70 @@ final class ClassAndImportsParserTest extends FunSuite with ShouldMatchers {
         |private class Example2 {
         |};
       """.stripMargin
-    parse(source) should equal(Seq(Ast(Seq(), "test.Example1"), Ast(Seq(), "test.Example2")))
+    parse(source) should equal(Seq(
+      Ast("test.Example1", Set(), Set("test"), Set()),
+      Ast("test.Example2", Set(), Set("test"), Set())))
   }
 
-  test("should parse imports into fully qualified names") {
+  test("should parse used imports into fully qualified names") {
     val source =
       """
-        |package test;
+        |import test.inner.Cls;
         |
+        |class Local {
+        |
+        |  Cls getCls();
+        |};
+      """.stripMargin
+    parse(source) should equal(Seq(Ast("Local", Set("test.inner.Cls"), Set(), Set())))
+  }
+
+  test("should parse fully qualified names and inner classes") {
+    val source =
+      """
+        |import test.inner.Cls;
+        |
+        |class Local {
+        |
+        |  Cls.Inner getInner();
+        |  java.util.List getList();
+        |};
+      """.stripMargin
+    parse(source) should equal(Seq(Ast("Local", Set("test.inner.Cls"), Set(), Set("java.util.List", "java"))))
+  }
+
+  test("should not parse unused imports") {
+    val source =
+      """
         |import test.inner.Cls;
         |
         |class Local {
         |};
       """.stripMargin
-    parse(source) should equal(Seq(Ast(Seq("test.inner.Cls"), "test.Local")))
+    parse(source) should equal(Seq(Ast("Local", Set(), Set(), Set())))
   }
 
   test("should not parse static imports") {
     val source =
       """
-        |package test;
-        |
         |import static alfa.beta.Ceta.method;
-        |import alfa.beta.Gamma;
         |
         |class Local {
         |};
       """.stripMargin
-    parse(source) should equal(Seq(Ast(Seq("alfa.beta.Gamma"), "test.Local")))
+    parse(source) should equal(Seq(Ast("Local", Set(), Set(), Set())))
   }
 
-  test("should not parse * imports") {
+  test("should parse * imports") {
     val source =
       """
-        |package test;
-        |
         |import alfa.beta.*;
         |import alfa.beta.gamma.Delta;
         |
         |class Local {
         |};
       """.stripMargin
-    parse(source) should equal(Seq(Ast(Seq("alfa.beta.gamma.Delta"), "test.Local")))
+    parse(source) should equal(Seq(Ast("Local", Set(), Set("alfa.beta"), Set())))
   }
 
   test("should yield empty sequence when no classes in source") {

@@ -10,13 +10,13 @@ import scalaz.Monoid
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 final class Zip (file: File) extends Archive {
-  override def extract[A: Monoid](f: (String, InputStream) => A): A = {
+  override def extract[A: Monoid](f: (String, Option[String], () => InputStream) => A): A = {
     val input = new FileInputStream(file)
     val zip = new ZipInputStream(new BufferedInputStream(input))
     val monoid = implicitly[Monoid[A]]
     try {
       fold(monoid.zero, zip, (acc: A, name: String, content: InputStream) =>
-        monoid.append(acc, f(name, content)))
+        monoid.append(acc, f(name, None, () => content)))
     } finally {
       close(zip)
       close(input)

@@ -1,4 +1,9 @@
 $ ->
+  currentCreateFunction = ->
+    makeSvg(jsonAddress("packages.json"))
+  jsonAddress = (jsonAddress) ->
+    jsonAddress + "?rev=" + getActiveSha();
+
   makeSvg = (jsonAddress) ->
     width = $("#chart").width()
     height = $("#chart").height()
@@ -317,14 +322,18 @@ $ ->
         </a>
       </li>
       """)
-    customSvg("custom.json")
+    currentCreateFunction = ->
+      customSvg(jsonAddress("custom.json"))
+    currentCreateFunction()
 
   $(".packages-button").on "click", (event) ->
     $(".nav-graph-detail-level").find("*").removeClass("active")
     $(".nav-graph-packages-tab").addClass("active")
     clearSvg()
     $(".gauges").remove()
-    makeSvg("packages.json")
+    currentCreateFunction = ->
+      makeSvg(jsonAddress("packages.json"))
+    currentCreateFunction()
     $("[rel='tooltip']").tooltip()
 
   $(".package-imports-button").on "click", (event) ->
@@ -332,9 +341,25 @@ $ ->
     $(".nav-graph-package-imports-tab").addClass("active")
     clearSvg()
     $(".gauges").remove()
-    makeSvg("pkgImports.json")
+    currentCreateFunction = ->
+     makeSvg(jsonAddress("pkgImports.json"))
+    currentCreateFunction()
     $("[rel='tooltip']").tooltip()
 
-  makeSvg("packages.json")
+  $(".class-imports-button").on "click", (event) ->
+    $(".nav-graph-detail-level").find("*").removeClass("active")
+    $(".nav-graph-imports-imports-tab").addClass("active")
+    clearSvg()
+    $(".gauges").remove()
+    currentCreateFunction = ->
+      makeSvg(jsonAddress("clsImports.json"))
+    currentCreateFunction()
+    $("[rel='tooltip']").tooltip()
+
+  currentCreateFunction()
   $("[rel='tooltip']").tooltip()
+  $("#revisions").on "revchange", (event) ->
+    clearSvg()
+    $(".gauges").remove()
+    (currentCreateFunction && currentCreateFunction());
 

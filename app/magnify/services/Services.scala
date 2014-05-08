@@ -2,8 +2,7 @@ package magnify.services
 
 import com.google.inject.AbstractModule
 import magnify.common.reflect.constructor
-import magnify.features.{Parser, Imports}
-
+import magnify.features.{Imports, Parser}
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
@@ -11,6 +10,6 @@ import magnify.features.{Parser, Imports}
 final class Services extends AbstractModule {
   def configure() {
     bind(classOf[Parser]).toConstructor(constructor[ClassAndImportsParser])
-    bind(classOf[Imports]).toConstructor(constructor[ExplicitProjectImports])
+    bind(classOf[Imports]).toConstructor(constructor[ProjectImports])
   }
 }

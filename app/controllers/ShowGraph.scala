@@ -1,15 +1,14 @@
 package controllers
 
-import com.tinkerpop.blueprints.Direction._
 import com.tinkerpop.blueprints.{Graph => _, _}
+import com.tinkerpop.blueprints.Direction._
 import magnify.features.Sources
 import magnify.model.graph._
 import magnify.modules.inject
+import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.json.Writes._
-import play.api.libs.json._
 import play.api.mvc._
-
 
 object ShowGraph extends ShowGraph(inject[Sources])
 
@@ -36,19 +35,37 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
 
   def showCustomJson(name: String) = Action { implicit request =>
     withGraph(name) { graph =>
-      Ok(json(new CustomGraphView(graph)))
+      Ok(json(new CustomGraphView(graph, request.getQueryString("rev").filter(_.trim.nonEmpty))))
     }
   }
 
   def showPackagesJson(name: String) = Action { implicit request =>
     withGraph(name) { graph =>
-      Ok(json(new PackagesGraphView(graph)))
+      Ok(json(new PackagesGraphView(graph, request.getQueryString("rev").filter(_.trim.nonEmpty))))
     }
   }
 
   def showPkgImportsJson(name: String) = Action { implicit request =>
     withGraph(name) { graph =>
-      Ok(json(new PackageImportsGraphView(graph)))
+      Ok(json(new PackageImportsGraphView(graph, request.getQueryString("rev").filter(_.trim.nonEmpty))))
+    }
+  }
+
+  def showClsImportsJson(name: String) = Action { implicit request =>
+    withGraph(name) { graph =>
+      Ok(json(new ClassImportsGraphView(graph, request.getQueryString("rev").filter(_.trim.nonEmpty))))
+    }
+  }
+
+  def committers(name: String) = Action { implicit request =>
+    withGraph(name) { graph =>
+      Ok(toJson(Committers(request.getQueryString("rev").filter(_.trim.nonEmpty), graph)))
+    }
+  }
+
+  def revisions(name: String) = Action { implicit request =>
+    withGraph(name) { graph =>
+      Ok(toJson(Revisions(request.getQueryString("rev").filter(_.trim.nonEmpty), graph)))
     }
   }
 
@@ -79,15 +96,12 @@ sealed class ShowGraph (protected override val sources: Sources) extends Control
     for (vertex <- vertices.toSeq) yield {
       val name = vertex.getProperty("name").toString
       val kind = vertex.getProperty("kind").toString
-      val pageRank = vertex.getProperty("page-rank").toString
+      val pageRank = Option(vertex.getProperty[String]("page-rank")).getOrElse("")
       Map("name" -> name, "kind" -> kind, "page-rank" -> pageRank) ++ property(vertex, "metric--lines-of-code")
     }
 
   private def property(v: Element, name: String): Map[String, String] =
-    v.getProperty(name) match {
-      case null => Map()
-      case value => Map(name -> value.toString)
-    }
+    Option(v.getProperty(name).asInstanceOf[Object]).map(value => Map(name -> value.toString)).getOrElse(Map())
 
   private def toMap(edges: Iterable[Edge], idByVertexName: Map[String, Int]): Seq[Map[String, JsValue]] =
     for {

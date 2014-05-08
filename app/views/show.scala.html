@@ -1,6 +1,8 @@
 @(name: String)(implicit flash: Flash, projects: Projects)
 
 @head = {
+  <script src="@routes.Assets.at("javascripts/revisions.js")"></script>
+  <script src="@routes.Assets.at("javascripts/authors.js")"></script>
   <script src="@routes.Assets.at("javascripts/d3.v2.js")"></script>
   <script src="@routes.Assets.at("javascripts/display.js")"></script>
 }
@@ -32,6 +34,17 @@
         Package imports
       </a>
     </li>
+    <li class="nav-graph-class-imports-tab">
+      <a
+      href="#"
+      class="class-imports-button"
+      rel="tooltip"
+      data-original-title="Shows classes with 'imports' relationship."
+      data-placement="bottom">
+        <i class="icon-retweet"></i>
+        Class imports
+      </a>
+    </li>
     <li class="nav-graph-custom-tab">
       <a href="#" class="custom-button"><i class="icon-beaker"></i> Custom</a>
     </li>
@@ -41,6 +54,10 @@
     <li class="disabled">
       <a href="@routes.ShowGraph.showCustomJson(name)">Download graph JSON <i class="icon-file"></i></a>
     </li>
+  </ul>
+  <ol id="revisions">
+  </ol>
+  <ul id="authors">
   </ul>
   <div id="chart">
   </div>

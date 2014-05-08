@@ -1,15 +1,15 @@
 package controllers
 
 import java.io.File
-import java.lang.String
+
+import scala.Some
+import scala.Predef._
+
 import magnify.features.Sources
-import magnify.model.Zip
 import magnify.modules._
+import play.api.libs.Files
 import play.api.libs.Files.TemporaryFile
 import play.api.mvc._
-import play.api.libs.Files
-import scala.Predef._
-import scala.Some
 
 /**
  * @author Cezary Bartoszuk (cezary@codilime.com)

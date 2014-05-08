@@ -2,8 +2,8 @@ package magnify.testing
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestKit
+import com.google.inject.{AbstractModule, Key, Module}
 import com.google.inject.name.Names
-import com.google.inject.{Module, Key, AbstractModule}
 import org.mockito.Mockito
 
 /**

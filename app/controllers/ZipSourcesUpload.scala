@@ -1,14 +1,17 @@
 package controllers
 
-import akka.dispatch._
 import java.io.File
 import java.lang.String
 import java.util.concurrent.Executors
+
+import scala.concurrent.{ExecutionContext, Future}
+
 import magnify.features.Sources
-import magnify.model.{Json, Zip}
+import magnify.model.{Git, Json, Zip}
 import magnify.modules.inject
 import play.api.libs.Files
 import play.api.mvc._
+import play.api.Logger
 
 /**
  * @author Cezary Bartoszuk (cezary@codilime.com)
@@ -18,11 +21,13 @@ object ZipSourcesUpload extends ZipSourcesUpload(inject[Sources])
 sealed class ZipSourcesUpload (protected override val sources: Sources)
     extends Controller with ProjectList {
 
+  private val logger = Logger(classOf[ZipSourcesUpload].getSimpleName)
+
   private type MultipartRequest = Request[MultipartFormData[Files.TemporaryFile]]
 
   private val allowedFormats = Set("application/zip", "application/x-java-archive",
     "application/json", "application/x-javascript", "text/javascript",
-    "text/x-javascript", "text/x-json", "application/octet-stream")
+    "text/x-javascript", "text/x-json", "application/octet-stream", "application/java-archive")
 
   private val progress = "success" -> "Project uploaded. Interpreting in background."
 
@@ -49,9 +54,27 @@ sealed class ZipSourcesUpload (protected override val sources: Sources)
     Redirect(routes.ZipSourcesUpload.form()).flashing(progress)
   }
 
+  def uploadGit = Action(parse.multipartFormData) { implicit request =>
+    for (path <- gitPath; name <- projectName) Future {
+      sources.add(name, Git(path, gitBranch))
+    }.recover {
+      case t: Throwable => logger.error("Error processing project: " + name, t)
+    }
+    Redirect(routes.ZipSourcesUpload.form()).flashing(progress)
+  }
+
   private def projectName(implicit request: MultipartRequest): Option[String] =
-    request.body.dataParts.get("project-name").flatMap {
-      case Seq(onlyName) => Some(onlyName)
+    getForm("project-name", request)
+
+  private def gitPath(implicit request: MultipartRequest): Option[String] =
+    getForm("project-git-path", request)
+
+  private def gitBranch(implicit request: MultipartRequest): Option[String] =
+    getForm("project-git-branch", request)
+
+  private def getForm(name: String, request: MultipartRequest) =
+    request.body.dataParts.get(name).flatMap {
+      case Seq(onlyName) => Some(onlyName).filter(_.trim.nonEmpty)
       case _ => None
     }
 

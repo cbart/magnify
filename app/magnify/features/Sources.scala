@@ -1,17 +1,20 @@
 package magnify.features
 
-import magnify.model.{Json, Archive}
-import magnify.model.graph.Graph
 import java.io.File
+
+import magnify.model.{Archive, Json, SingleVersionArchive, VersionedArchive}
+import magnify.model.graph.Graph
 
 /**
  * @author Cezary Bartoszuk (cezarybartoszuk@gmail.com)
  */
 trait Sources {
 
-  def add(name: String, file: Archive)
+  def add(name: String, archive: VersionedArchive): Unit
 
-  def add(name: String, graph: Json)
+  def add(name: String, archive: Archive): Unit = this.add(name, new SingleVersionArchive(archive))
+
+  def add(name: String, graph: Json): Unit
 
   def list: Seq[String]
 
