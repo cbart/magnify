@@ -7,7 +7,7 @@ import scala.collection.mutable
 import scala.collection.JavaConversions._
 
 import org.eclipse.jgit.diff.{DiffFormatter, RawTextComparator}
-import org.eclipse.jgit.lib.Repository
+import org.eclipse.jgit.lib.{MutableObjectId, Repository}
 import org.eclipse.jgit.revwalk.{RevCommit, RevWalk}
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.eclipse.jgit.treewalk.TreeWalk
@@ -75,6 +75,14 @@ private[this] final class Git(repo: Repository, branch: String) extends Versione
       case None => acc
     }
   }
+
+  private val mutableObjectId = new MutableObjectId()
+
+  override def getContent(objectId: String): String = {
+    mutableObjectId.fromString(objectId)
+    val loader = repo.open(mutableObjectId)
+    new String(loader.getBytes)
+  }
 }
 
 private[this] final class GitCommit(
@@ -83,8 +91,10 @@ private[this] final class GitCommit(
   extends Archive {
 
   private val logger = Logger(classOf[GitCommit].getSimpleName)
+
+  private val mutableObjectId = new MutableObjectId()
   
-  override def extract[A: Monoid](f: (String, InputStream) => A): A = {
+  override def extract[A: Monoid](f: (String, Option[String], InputStream) => A): A = {
     val tree = commit.getTree()
     logger.debug("Having tree: " + tree)
     val treeWalk = new TreeWalk(repo)
@@ -92,20 +102,21 @@ private[this] final class GitCommit(
     treeWalk.setRecursive(true)
     val monoid = implicitly[Monoid[A]]
     try {
-      fold(monoid.zero, treeWalk, (acc: A, name: String, content: InputStream) =>
-        monoid.append(acc, f(name, content)))
+      fold(monoid.zero, treeWalk, (acc: A, name: String, oObjectId: Option[String], content: InputStream) =>
+        monoid.append(acc, f(name, oObjectId, content)))
     } finally {
       repo.close()
     }
   }
 
   @tailrec
-  private def fold[A](acc: A, walk: TreeWalk, transform: (A, String, InputStream) => A): A = {
+  private def fold[A](acc: A, walk: TreeWalk, transform: (A, String, Option[String], InputStream) => A): A = {
     if (walk.next()) {
-      val loader = repo.open(walk.getObjectId(0))
-      val out = new ByteArrayOutputStream()
-      loader.copyTo(out)
-      fold(transform(acc, walk.getPathString, new ByteArrayInputStream(out.toByteArray)), walk, transform)
+      walk.getObjectId(mutableObjectId, 0)
+      val loader = repo.open(mutableObjectId)
+      fold(
+        transform(acc, walk.getPathString, Some(mutableObjectId.name), new ByteArrayInputStream(loader.getCachedBytes)),
+        walk, transform)
     } else {
       acc
     }
