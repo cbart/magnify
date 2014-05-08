@@ -122,6 +122,8 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
       } else {
         cls.setProperty("source-code", parsedFile.content)
       }
+      val linesOfCode = parsedFile.content.count(_ == '\n')
+      cls.setProperty("metric--lines-of-code", linesOfCode)
       cls
   }
 
@@ -226,19 +228,6 @@ private[features] final class GraphSources (parse: Parser, imports: Imports) ext
     importedGraphs.get(name)
 
   private def computeLinesOfCode(graph: Graph, vArchive: VersionedArchive) {
-    graph
-      .vertices
-      .has("kind", "class")
-      .toList foreach {
-      case v: Vertex =>
-        val sourceCode = if (v.getPropertyKeys.contains("source-code")) {
-          v.getProperty("source-code")
-        } else {
-          vArchive.getContent(v.getProperty("object-id"))
-        }
-        val linesOfCode = sourceCode.count(_ == '\n')
-        v.setProperty("metric--lines-of-code", linesOfCode)
-    }
     graph
       .vertices
       .has("kind", "package").toList foreach { case pkg: Vertex =>
